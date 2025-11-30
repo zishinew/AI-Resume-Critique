@@ -1,6 +1,6 @@
 # 📄 AI Resume Critique
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ai-resume-critique-xrppbcokwqrqxxxgnhmp7k.streamlit.app/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ai-resumecritique.streamlit.app/)
 [![Built with](https://img.shields.io/badge/Built_with-Google_Gemini-blue)](https://deepmind.google/technologies/gemini/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 
@@ -12,7 +12,7 @@ This application uses Google's Gemini AI to critique your resume against the hig
 
 The easiest way to use the tool is to visit the live website. No API key or setup required!
 
-### [👉 Click here to launch AI Resume Critique](https://ai-resume-critique-xrppbcokwqrqxxxgnhmp7k.streamlit.app/)
+### [👉 Click here to launch AI Resume Critique](https://ai-resumecritique.streamlit.app/)
 
 ---
 
@@ -49,3 +49,4 @@ cd ai-resume-critique
 
 # Install dependencies using uv
 uv add streamlit google-genai python-dotenv PyPDF2
+
