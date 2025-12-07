@@ -17,7 +17,7 @@ st.markdown("""
 
     /* Target the actual button */
     div.stButton > button {
-        width: 465% !important; /* Set a reasonable width */
+        width: 325% !important;
         background-color: #4CAF50 !important; 
         color: white !important;
         padding: 10px !important;
@@ -50,7 +50,18 @@ with col1:
 with col2:
     notes = st.text_input("Additional Notes", placeholder="e.g. Applying for Internship")
 
-analyze_button = st.button("📝 Analyze Resume!")
+col1, col2, col3 , col4, col5 = st.columns(5)
+
+with col1:
+    pass
+with col3:
+    pass
+with col4:
+    pass
+with col5:
+    pass
+with col2 :
+    analyze_button = st.button('📝 Analyze Resume!')
 
 def extract_text_from_pdf(pdf_file):
     pdf_reader = PyPDF2.PdfReader(pdf_file)
