@@ -143,10 +143,6 @@ function TechnicalInterview({ company, role, difficulty, onComplete }: Technical
     def isAnagram(self, s: str, t: str) -> bool:
         # Your code here
         return False`,
-      'reverse-string': `class Solution:
-    def reverseString(self, s: list[str]) -> None:
-        # Your code here
-        pass`,
       'valid-palindrome': `class Solution:
     def isPalindrome(self, s: str) -> bool:
         # Your code here

@@ -6,9 +6,9 @@ interface CircleMeterProps {
   size?: number
 }
 
-function CircleMeter({ score, size = 200 }: CircleMeterProps) {
+function CircleMeter({ score, size = 240 }: CircleMeterProps) {
   const [animatedScore, setAnimatedScore] = useState(0)
-  const radius = (size - 20) / 2
+  const radius = (size - 32) / 2
   const circumference = 2 * Math.PI * radius
   const offset = circumference - (animatedScore / 100) * circumference
 
@@ -58,7 +58,7 @@ function CircleMeter({ score, size = 200 }: CircleMeterProps) {
           cy={size / 2}
           r={radius}
           fill="none"
-          strokeWidth="12"
+          strokeWidth="20"
         />
         <circle
           className="circle-meter-progress"
@@ -66,7 +66,7 @@ function CircleMeter({ score, size = 200 }: CircleMeterProps) {
           cy={size / 2}
           r={radius}
           fill="none"
-          strokeWidth="12"
+          strokeWidth="20"
           stroke={getColor(animatedScore)}
           strokeDasharray={circumference}
           strokeDashoffset={offset}

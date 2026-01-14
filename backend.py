@@ -997,38 +997,58 @@ async def analyze_resume(
         reference_examples = """
         REFERENCE RESUMES FOR CALIBRATION:
 
-        STARTUP LEVEL (Minimum acceptable - Score: 50-60):
-        - First year university student at Waterloo
-        - 1 current software development role (UW Orbital - Ground Station Developer with FastAPI/React)
-        - 2-3 solid personal projects (hearth. real estate analyzer, housing price predictor, AI resume reviewer)
-        - Some technical skills and certifications
-        - Leadership/extracurriculars (case competitions)
-        This candidate should score 50-60. Can pass startup level screening.
+        CRITICAL CONTEXT: With modern AI coding tools (ChatGPT, Claude, Copilot, Cursor), projects can be "vibe coded" in hours.
+        Therefore, projects alone carry SIGNIFICANTLY LESS WEIGHT than they did previously. Focus heavily on:
+        - REAL work experience with quantifiable impact
+        - Duration and quality of professional roles
+        - Competitive achievements (hackathons, case competitions with placements)
+        - Academic excellence (high GPA, scholarships, awards)
 
-        INTERMEDIATE LEVEL (Minimum acceptable - Score: 70-80):
-        - University student with good GPA If their GPA is low, require stronger projects/experience
-        - 2+ years combined experience OR 2+ internships at known companies (not required, but preferred)
-        - Example: Java Backend Engineer with 2 years at real companies, multiple projects
-        - OR: Multiple solid projects + some work experience + strong academics
-        - Production-level projects with real metrics
-        - If they have less than 2 years of experience, require extremely high level projects, internships or experience
-        This candidate should score 70-80. Can pass intermediate level screening.
+        STARTUP LEVEL (Maximum Score: 50-60):
+        - First or second year university student
+        - 1 current software role (e.g., FastAPI/React work at university club)
+        - 2-3 personal projects (NOTE: Heavily discounted - anyone can make these with AI now)
+        - Basic technical skills, maybe some certifications
+        - Some leadership/extracurriculars
+        - NO significant professional experience yet
+        REALISTIC OUTCOME: Can pass startup screening. Maybe a shot at banks if lucky and crushes technicals.
+        This candidate should score 50-60 MAXIMUM. They are NOT ready for anything beyond startups.
 
-        BIG TECH LEVEL (Minimum acceptable - Score: 80+):
-        - MUST have: 2+ years of professional software development experience
-        - Very relevant work + positions with large scale contributions in their role.
-        - 2+ internships at different companies with quantified impact
-        - OR: Multiple FAANG internships (Amazon SDE, Adobe Computer Scientist)
-        - Clear evidence of working on large-scale systems (millions of users, significant cost savings)
-        - Strong technical depth across multiple domains
-        This candidate should score 80+. Ready for big tech.
+        INTERMEDIATE LEVEL (Score: 61-75):
+        - University student with HIGH GPA (3.7+) OR proven competitive success
+        - 1-2 REAL internships at established companies (not just university clubs)
+        - Example: 6-month+ internship at known company with measurable impact
+        - Strong academics + proven work experience + competitive achievements
+        - Projects are supplementary, NOT the main qualifier
+        - If low GPA, must have exceptional internships or competitive placements
+        This candidate should score 61-75. Can land mid-tier companies and banks.
 
-        SCORING GUIDELINES:
-        - 80+: Ready for Big Tech (FAANG level companies)
-        - 60-79: Can pass intermediate/established company screening (max 80 if can pass intermediate)
-        - 50-59: Can pass startup level screening (max 60 if can pass startup)
-        - 40-49: Small shot at startup jobs, significant gaps
-        - Under 40: Cannot pass any screening, major issues
+        BIG TECH LEVEL (Score: 76-85):
+        - Multiple (2-3+) internships at KNOWN companies with real impact
+        - OR: 1 FAANG/unicorn internship with stellar performance
+        - High GPA (3.8+) from target school OR competitive programming success (ICPC, top Codeforces)
+        - Quantified impact at scale (worked on features with millions of users, measurable metrics)
+        - Projects are nice-to-have but NOT deciding factor
+        This candidate should score 76-85. Ready for Big Tech interviews.
+
+        EXCEPTIONAL (Score: 86-95):
+        - Multiple FAANG internships with return offers
+        - Significant open source contributions to major projects
+        - Top-tier competitive achievements (IOI medals, ICPC world finals)
+        - Founded successful startup or built product with real users
+        - Publications or research at top venues
+        This candidate should score 86-95. Top 1% of candidates.
+
+        SCORING GUIDELINES (BE STRICT):
+        - 86-95: Exceptional - Multiple FAANG internships, competitive achievements, or real business success
+        - 76-85: Big Tech Ready - 2+ quality internships OR 1 FAANG internship OR exceptional projects + competitive record
+        - 61-75: Intermediate - 1 real internship OR strong university dev role + excellent projects
+        - 51-60: Startup Level - University dev team role OR 2-3 solid projects, can pass startup screening
+        - 41-50: Below Bar - Only basic projects with no university dev experience
+        - 0-40: Not Ready - Major gaps, no meaningful technical work
+
+        DO NOT INFLATE SCORES. Projects alone can get you 51-58 if they're strong enough.
+        University design teams, research positions, and dev clubs COUNT as real experience.
         """
 
         prompt = f"""Today is {date.today()}.
@@ -1042,21 +1062,26 @@ async def analyze_resume(
 
         INSTRUCTIONS:
         1. Compare this resume to the REFERENCE resumes provided above
-        2. Determine which level this resume can pass (startup, intermediate, or big tech)
+        2. Determine which level this resume can realistically achieve
         3. Assign a PRECISE score from 1-100 based on these STRICT SCORING GUIDELINES:
-           - 0-30: Significantly below entry-level standards
-           - 31-45: Below startup level, needs major improvements
-           - 46-55: Startup level potential, needs improvements
-           - 56-65: Solid startup level resume
-           - 66-72: Low intermediate level (Canadian banks, mid-size companies)
-           - 73-78: Strong intermediate level
-           - 79-84: High intermediate level, approaching big tech
-           - 85-91: Big tech ready with minor improvements
-           - 92-96: Strong big tech resume
-           - 97-100: Exceptional big tech resume
-        4. Be STRICT and REALISTIC. Use the reference examples as your baseline.
-        5. Provide a SPECIFIC numeric score (not rounded to 25, 50, 75, or 100).
-        6. Provide structured feedback with specific recommendations.
+           - 0-25: No relevant experience, cannot pass any screening
+           - 26-40: Minimal qualifications, major improvements needed
+           - 41-50: Below startup bar, needs professional experience
+           - 51-58: Startup level - basic experience, can pass early-stage startup screening
+           - 59-65: Solid startup level - good for growth-stage startups
+           - 66-70: Low intermediate - might pass bank/mid-tier screening with luck
+           - 71-75: Intermediate ready - can land established companies
+           - 76-80: High intermediate - strong candidate for top mid-tier firms
+           - 81-85: Big tech ready - can compete for FAANG interviews
+           - 86-90: Strong big tech - likely to get multiple FAANG offers
+           - 91-95: Exceptional - top 1% candidate
+           - 96-100: Reserved for absolute legends only (IOI gold, multiple FAANG internships, etc.)
+        4. Be EXTREMELY STRICT and REALISTIC. Projects alone can be strong enough if they show real depth.
+        5. Focus on: professional experience, university dev team roles, project depth, competitive achievements, quantifiable impact.
+        6. GPA is nice to have but NOT a major deciding factor - focus on actual technical work.
+        7. University design teams, research positions, and dev clubs count as real experience.
+        8. A typical university student with only projects should score 48-56, NOT 65-75.
+        7. Provide a SPECIFIC numeric score (not rounded).
 
         Respond in this EXACT format:
         SCORE: [number between 0-100]
@@ -1208,66 +1233,82 @@ LISTING:
             "easy": {
                 "company_type": "an early-stage startup internship program",
                 "strictness": """
-                STARTUP INTERNSHIP HIRING MODE: Looking for promising candidates eager to learn and build.
+                STARTUP INTERNSHIP HIRING MODE: Looking for candidates with real potential and demonstrated technical ability.
 
-                PASS if candidate has:
-                - Currently enrolled in or recently completed university/bootcamp
-                - 1+ relevant projects (personal, school, or previous internship)
-                - Demonstrated passion for technology and learning
-                - Basic competency in required tech stack
-                - Previous internship experience is a plus
+                CRITICAL: GPA doesn't really matter - focus on actual work and projects.
+                University dev team roles (design teams, research labs, student dev clubs) COUNT as real experience.
+                Projects can compensate for lack of traditional internships IF they show real depth.
+
+                PASS if candidate has AT LEAST ONE of:
+                - Previous internship or co-op position
+                - Active role on university design team, research project, or dev club
+                - 2-3 strong projects with real technical depth (not basic CRUD apps)
+                - Competitive achievements (hackathon wins, case competition placements)
+                - Part-time or freelance dev work
 
                 REJECT if:
-                - No programming experience whatsoever
-                - Only theoretical knowledge without practical projects
-                - Poor communication or lack of professional presence
+                - Only basic tutorial-level projects with no depth
+                - No university dev team involvement AND no internships AND only shallow projects
+                - No evidence of technical growth or learning
 
-                Target pass rate: ~50-60% of applicants
+                GPA is nice to have but NOT a deciding factor.
+                Target pass rate: ~30-40% of applicants
                 """
             },
             "medium": {
                 "company_type": "a mid-tier company internship program",
                 "strictness": """
-                MID-TIER COMPANY INTERNSHIP HIRING MODE: Looking for solid candidates with proven skills.
+                MID-TIER COMPANY INTERNSHIP HIRING MODE: Looking for proven performers with real technical depth.
 
-                PASS if candidate has:
-                - Currently enrolled in or recently completed university
-                - 2+ relevant projects demonstrating technical depth
-                - Strong portfolio or GitHub presence
-                - Relevant internship or professional experience preferred
-                - Solid grasp of CS fundamentals
-                - Clear communication and professional presence
+                CRITICAL: GPA is not a major factor. Focus on demonstrated technical ability through:
+                - Internships or professional work experience
+                - University dev team contributions (design teams, research labs)
+                - Strong project portfolio with depth and complexity
+                - Competitive programming success or hackathon victories
+
+                PASS if candidate has AT LEAST ONE of:
+                - 1+ previous internship at real company
+                - Active university dev team role (design team, research lab) + strong project portfolio (3+ complex projects)
+                - Significant competitive achievements + projects
+                - Freelance/contract work with real clients
 
                 REJECT if:
-                - Minimal programming experience or projects
-                - No demonstrated technical growth
-                - Weak academic standing in CS courses
-                - Poor communication skills
+                - No internship AND no university dev experience AND only basic projects
+                - Only tutorial-level projects with no depth
+                - No evidence of working on real technical challenges
 
-                Target pass rate: ~30-40% of applicants
+                GPA is nice to have but NOT required if work/projects are strong.
+                Target pass rate: ~20-25% of applicants
                 """
             },
             "hard": {
                 "company_type": "a Big Tech company internship program",
                 "strictness": """
-                BIG TECH INTERNSHIP HIRING MODE: Looking for top-tier candidates with exceptional skills.
+                BIG TECH INTERNSHIP HIRING MODE: Only accepting top-tier candidates with exceptional proven track records.
 
-                PASS if candidate has:
-                - Strong academic background or completed bootcamp
-                - 3+ meaningful projects with technical depth
-                - Strong GitHub presence or competitive programming record
-                - Previous internship at reputable company highly preferred
-                - Excellent grasp of CS fundamentals and algorithms
-                - Clear evidence of continuous learning and growth
-                - Professional communication and leadership
+                CRITICAL: GPA is nice to have but NOT required. What matters:
+                - Previous internships at top companies (FAANG, unicorns, elite startups)
+                - Competitive programming: Codeforces Master+, ICPC regionals, IOI medals
+                - Real research publications or significant open source contributions
+                - Founded company with real traction or worked on products with millions of users
+                - Exceptional project portfolio with measurable impact
+
+                PASS if candidate has AT LEAST TWO of:
+                - 1+ previous FAANG/unicorn internship
+                - Top 500 Codeforces, ICPC regional finalist, or similar competitive achievement
+                - Significant open source contributions (core contributor to major projects)
+                - Published research or won major hackathons (not just participation)
+                - Built product with 10k+ real users with metrics
+                - Multiple university dev team leadership roles + exceptional projects
 
                 REJECT if:
-                - Limited project portfolio
-                - No evidence of competitive programming or algorithms knowledge
-                - Weak academic standing
-                - Generic or unprofessional presentation
+                - No previous top-tier internship AND no exceptional technical achievements
+                - Only has projects without competitive validation or real users
+                - Generic internship experience at unknown companies
+                - No measurable impact or scale
 
-                Target pass rate: ~15-25% of applicants
+                GPA is nice to have but NOT a deciding factor.
+                Target pass rate: ~10-15% of applicants
                 """
             }
         }
@@ -1483,31 +1524,6 @@ TECHNICAL_QUESTIONS = {
                 {"input": {"s": "abc", "t": "ab"}, "expectedOutput": False},
                 {"input": {"s": "aaaaaaaaaa", "t": "aaaaaaaaaa"}, "expectedOutput": True},
                 {"input": {"s": "anagram", "t": "nagaram"}, "expectedOutput": True}
-            ]
-        },
-        {
-            "id": "reverse-string",
-            "title": "Reverse String",
-            "description": "Write a function that reverses a string. The input string is given as an array of characters s.",
-            "difficulty": "Easy",
-            "examples": [
-                {"input": "s = [\"h\",\"e\",\"l\",\"l\",\"o\"]", "output": "[\"o\",\"l\",\"l\",\"e\",\"h\"]"}
-            ],
-            "constraints": [
-                "1 <= s.length <= 10^5",
-                "s[i] is a printable ascii character"
-            ],
-            "sampleTestCases": [
-                {"input": {"s": ["h","e","l","l","o"]}, "expectedOutput": ["o","l","l","e","h"]},
-                {"input": {"s": ["H","a","n","n","a","h"]}, "expectedOutput": ["h","a","n","n","a","H"]}
-            ],
-            "hiddenTestCases": [
-                {"input": {"s": ["a"]}, "expectedOutput": ["a"]},
-                {"input": {"s": ["a","b"]}, "expectedOutput": ["b","a"]},
-                {"input": {"s": ["A"," ","m","a","n",","," ","a"," ","p","l","a","n",","," ","a"," ","c","a","n","a","l",":"," ","P","a","n","a","m","a"]}, "expectedOutput": ["a","m","a","n","a","P"," ",":","l","a","n","a","c"," ","a"," ",",","n","a","l","p"," ","a"," ",",","n","a","m"," ","A"]},
-                {"input": {"s": ["1","2","3","4","5"]}, "expectedOutput": ["5","4","3","2","1"]},
-                {"input": {"s": ["!","@","#","$","%"]}, "expectedOutput": ["%","$","#","@","!"]},
-                {"input": {"s": ["r","a","c","e","c","a","r"]}, "expectedOutput": ["r","a","c","e","c","a","r"]}
             ]
         },
         {
@@ -2593,7 +2609,6 @@ async def run_code(request: RunCodeRequest):
         function_name_map = {
             "two-sum": "twoSum",
             "contains-duplicate": "hasDuplicate",
-            "reverse-string": "reverseString",
             "valid-anagram": "isAnagram",
             "valid-palindrome": "isPalindrome",
             "palindrome-number": "isPalindrome",
