@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Editor from '@monaco-editor/react' // Uncomment after: npm install @monaco-editor/react
+import { API_BASE_URL } from '../config'
 import './TechnicalInterview.css'
 
 interface Question {
@@ -103,7 +104,7 @@ function TechnicalInterview({ company, role, difficulty, onComplete }: Technical
     try {
       setLoadingInterview(true)
       const client_id = getOrCreateClientId()
-      const response = await fetch('http://localhost:8000/api/technical-questions', {
+      const response = await fetch(`${API_BASE_URL}/api/technical-questions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ company, role, difficulty, client_id })
@@ -697,7 +698,7 @@ public:
       setGradingErrorById(prev => ({ ...prev, [q.id]: null }))
 
       const currentCodeToRun = code[q.id]?.[selectedLanguage] || ''
-      const response = await fetch('http://localhost:8000/api/run-code', {
+      const response = await fetch(`${API_BASE_URL}/api/run-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

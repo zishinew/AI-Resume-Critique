@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_BASE_URL } from '../config'
 import './JobSimulator.css'
 import { jobs } from '../data/jobs'
 import type { Job } from '../data/jobs'
@@ -75,7 +76,7 @@ function JobSimulator() {
       setLoading(true)
       setLoadingText('Loading real job listings...')
       try {
-        const url = new URL('http://localhost:8000/api/jobs/real')
+        const url = new URL(`${API_BASE_URL}/api/jobs/real`)
         url.searchParams.set('limit', '200')
         if (realJobsQuery.trim()) url.searchParams.set('q', realJobsQuery.trim())
         const resp = await fetch(url.toString())
@@ -132,7 +133,7 @@ function JobSimulator() {
     setRealJobDetailsError('')
     setRealJobDetailsLoading(true)
     try {
-      const url = new URL('http://localhost:8000/api/jobs/real/details')
+      const url = new URL(`${API_BASE_URL}/api/jobs/real/details`)
       url.searchParams.set('apply_url', selected.real.apply_url)
       url.searchParams.set('company', selected.company)
       url.searchParams.set('role', selected.role)
@@ -187,7 +188,7 @@ function JobSimulator() {
         if (r?.raw?.row) formData.append('job_row', r.raw.row)
       }
 
-      const response = await fetch('http://localhost:8000/api/screen-resume', {
+      const response = await fetch(`${API_BASE_URL}/api/screen-resume`, {
         method: 'POST',
         body: formData,
       })

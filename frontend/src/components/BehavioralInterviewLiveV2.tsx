@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { API_BASE_URL } from '../config'
 import './BehavioralInterview.css'
 
 interface BehavioralInterviewLiveV2Props {
@@ -29,7 +30,7 @@ function BehavioralInterviewLiveV2({ company, role, onComplete }: BehavioralInte
   const startInterview = async () => {
     try {
       // Get API key from backend
-      const response = await fetch('http://localhost:8000/api/get-gemini-token')
+      const response = await fetch(`${API_BASE_URL}/api/get-gemini-token`)
       const data = await response.json()
       apiKeyRef.current = data.api_key
 

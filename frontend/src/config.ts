@@ -1,4 +1,4 @@
-// API Configuration
+// API Configuration - Force rebuild
 const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
 
 export const API_BASE_URL = isLocalDev

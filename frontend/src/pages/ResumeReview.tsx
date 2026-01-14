@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_BASE_URL } from '../config'
 import './ResumeReview.css'
 import LoadingScreen from '../components/LoadingScreen'
 import CircleMeter from '../components/CircleMeter'
@@ -48,7 +49,7 @@ function ResumeReview() {
       formData.append('file', file)
       if (jobRole) formData.append('job_role', jobRole)
 
-      const response = await fetch('http://localhost:8000/api/analyze', {
+      const response = await fetch(`${API_BASE_URL}/api/analyze`, {
         method: 'POST',
         body: formData,
       })

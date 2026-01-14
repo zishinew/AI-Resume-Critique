@@ -2,6 +2,11 @@
 
 ## All Issues Fixed
 
+### ✅ Centralized API Configuration
+- **Created**: `frontend/src/config.ts` - Single source of truth for API URLs
+- **Updated**: All 10 files now import from config instead of hardcoded URLs
+- **Benefits**: Update once in config.ts instead of 10 different files
+
 ### ✅ Removed Terser Dependency
 - **Problem**: Vite config used `minify: 'terser'` but terser wasn't installed
 - **Fix**: Simplified vite.config.ts to match working portfolio (default minification)
@@ -24,38 +29,40 @@
 - **vercel.json**: Builds only frontend, outputs to frontend/dist
 - **Rewrites**: SPA routing configured for client-side navigation
 
-## Current Configuration
+## 🚀 How to Update API URLs
 
-### vercel.json
-```json
-{
-  "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "frontend/dist",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
-}
-```
+**You only need to update ONE file now!**
 
-### vite.config.ts
-- Simple configuration matching portfolio
-- No terser/minification issues
-- Proxy configured for local development only
+### When backend is deployed:
 
-### TypeScript
-- ✅ All files compile with no errors
-- ✅ No unused variables
-- ✅ Type checking passes
+1. Open `frontend/src/config.ts`
+2. Replace the placeholder URLs:
+   ```typescript
+   export const API_BASE_URL = import.meta.env.PROD 
+     ? 'https://your-backend.railway.app' // ← Update this
+     : 'http://localhost:8000'
+
+   export const WS_BASE_URL = import.meta.env.PROD
+     ? 'wss://your-backend.railway.app' // ← Update this
+     : 'ws://localhost:8000'
+   ```
+
+3. Commit and push - done!
+
+All 10 files automatically use the config:
+- ✅ TechnicalInterview.tsx
+- ✅ BehavioralInterview.tsx
+- ✅ BehavioralInterviewLive.tsx
+- ✅ BehavioralInterviewLiveV2.tsx
+- ✅ JobSimulator.tsx
+- ✅ ResumeReview.tsx
 
 ## Deploy Steps
 
 1. **Commit and push changes**:
    ```bash
    git add .
-   git commit -m "Fix deployment configuration"
+   git commit -m "Centralize API configuration"
    git push
    ```
 
@@ -67,19 +74,8 @@
 
 3. **After frontend deploys**:
    - Deploy backend separately to Railway/Render
-   - Update API URLs in frontend code (all localhost:8000 references)
-   - Redeploy frontend with production backend URLs
-
-## Known API URLs to Update Later
-When backend is deployed, replace `http://localhost:8000` with production URL in:
-- TechnicalInterview.tsx (2 locations)
-- BehavioralInterview.tsx (2 locations)
-- BehavioralInterviewLive.tsx (1 location)
-- BehavioralInterviewLiveV2.tsx (1 location)
-- JobSimulator.tsx (3 locations)
-- ResumeReview.tsx (1 location)
-
-Total: 10 files to update with production backend URL
+   - Update `frontend/src/config.ts` with production backend URL
+   - Commit and push - Vercel auto-redeploys
 
 ## Build Should Succeed Now ✅
-All TypeScript errors fixed, configuration simplified, matches working portfolio setup.
+All TypeScript errors fixed, configuration simplified, API URLs centralized.

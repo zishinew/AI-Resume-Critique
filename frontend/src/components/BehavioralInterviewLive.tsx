@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { WS_BASE_URL } from '../config'
 import './BehavioralInterview.css'
 import LoadingScreen from './LoadingScreen'
 
@@ -95,7 +96,7 @@ function BehavioralInterviewLive({ company, role, onComplete }: BehavioralInterv
 
   const connectWebSocket = () => {
     try {
-      const ws = new WebSocket('ws://localhost:8000/ws/behavioral-interview')
+      const ws = new WebSocket(`${WS_BASE_URL}/ws/behavioral-interview`)
       wsRef.current = ws
 
       ws.onopen = () => {

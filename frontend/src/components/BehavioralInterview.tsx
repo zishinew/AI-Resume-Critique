@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { API_BASE_URL } from '../config'
 import './BehavioralInterview.css'
 
 interface BehavioralInterviewProps {
@@ -31,7 +32,7 @@ function BehavioralInterview({ company, role, onComplete }: BehavioralInterviewP
 
   const startInterview = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/start-voice-interview', {
+      const response = await fetch(`${API_BASE_URL}/api/start-voice-interview`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ company, role })
@@ -152,7 +153,7 @@ function BehavioralInterview({ company, role, onComplete }: BehavioralInterviewP
       formData.append('audio', audioBlob, 'response.wav')
       formData.append('session_id', sessionId)
 
-      const response = await fetch('http://localhost:8000/api/voice-response', {
+      const response = await fetch(`${API_BASE_URL}/api/voice-response`, {
         method: 'POST',
         body: formData
       })
