@@ -19,6 +19,7 @@ function ResumeReview() {
   const [feedback, setFeedback] = useState<string | null>(null)
   const [score, setScore] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -32,6 +33,22 @@ function ResumeReview() {
         setFile(null)
       }
     }
+  }
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget
+    const rect = card.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    const tiltX = ((y - centerY) / centerY) * -3
+    const tiltY = ((x - centerX) / centerX) * 3
+    setTilt({ x: tiltX, y: tiltY })
+  }
+
+  const handleCardMouseLeave = () => {
+    setTilt({ x: 0, y: 0 })
   }
 
   const handleAnalyze = async () => {
@@ -127,27 +144,45 @@ function ResumeReview() {
   return (
     <>
       {loading && <LoadingScreen />}
-      <div className="page">
-        <div className="page-container">
+      <div className="resume-review-page">
+        <div className="resume-review-container">
           <button className="back-button" onClick={() => navigate('/')}>
             ← Back to Home
           </button>
 
-          <header className="page-header" style={{ textAlign: 'center' }}>
-            <h1>Resume Review</h1>
-            <p className="page-subtitle">
+          <header className="review-header">
+            <h1 className="review-title">
+              Resume Review
+            </h1>
+            <p className="review-subtitle">
               Upload your resume and get professional AI-powered feedback
             </p>
           </header>
 
           {!feedback && (
-            <div className="upload-section">
-              <div className="file-upload">
-                <label htmlFor="file-input" className="file-label">
-                  <div className="upload-icon">
-                    {file ? '✓' : '↑'}
+            <div className="review-upload-section">
+              <div 
+                className="upload-card"
+                onMouseMove={handleCardMouseMove}
+                onMouseLeave={handleCardMouseLeave}
+                style={{
+                  transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+                  transition: 'transform 0.1s ease-out',
+                }}
+              >
+                <label htmlFor="file-input" className="file-upload-label">
+                  <div className="upload-icon-wrapper">
+                    {file ? (
+                      <svg className="upload-icon success" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                    )}
                   </div>
-                  <div className="upload-text">
+                  <div className="upload-content">
                     {file ? (
                       <>
                         <span className="file-name">{file.name}</span>
@@ -166,57 +201,75 @@ function ResumeReview() {
                   type="file"
                   accept=".pdf,.txt"
                   onChange={handleFileChange}
-                  className="file-input"
+                  className="file-input-hidden"
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
-                <div className="input-group" style={{ width: '100%', maxWidth: '400px' }}>
-                  <label className="input-label" style={{ textAlign: 'center' }}>Target Job Role</label>
-                  <input
-                    type="text"
-                    placeholder="Software Engineer"
-                    value={jobRole}
-                    onChange={(e) => setJobRole(e.target.value)}
-                    className="text-input"
-                  />
-                </div>
+              <div className="job-role-section">
+                <label className="job-role-label">Target Job Role</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Software Engineer, Product Manager"
+                  value={jobRole}
+                  onChange={(e) => setJobRole(e.target.value)}
+                  className="job-role-input"
+                />
               </div>
 
               <button
                 onClick={handleAnalyze}
                 disabled={loading || !file}
-                className="analyze-button apply-button"
+                className="analyze-button"
               >
-                {loading ? 'Analyzing...' : 'Apply!'}
+                {loading ? (
+                  <span className="button-loading">
+                    <span className="spinner"></span>
+                    Analyzing...
+                  </span>
+                ) : (
+                  'Analyze Resume'
+                )}
               </button>
             </div>
           )}
 
           {error && (
             <div className="error-message">
-              <span className="error-icon">!</span>
-              {error}
+              <svg className="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01" />
+              </svg>
+              <span>{error}</span>
             </div>
           )}
 
           {feedback && (
             <div className="feedback-container">
-              {score !== null && <CircleMeter score={score} />}
-              <h2 className="feedback-title">Feedback</h2>
+              <div className="feedback-header">
+                {score !== null && <CircleMeter score={score} />}
+                <h2 className="feedback-title">Your Resume Analysis</h2>
+                <button onClick={() => { setFeedback(null); setScore(null); setFile(null); setJobRole(''); }} className="new-analysis-button">
+                  Analyze Another Resume
+                </button>
+              </div>
               <div className="feedback-content">
                 {parseFeedback(feedback).sections.map((section, sectionIdx) => (
                   <div key={sectionIdx} className="feedback-section">
                     {section.title && section.title !== 'Feedback' && (
-                      <h3 className="feedback-section-title">{section.title}</h3>
+                      <h3 className="feedback-section-title">
+                        <span className="section-number">{String(sectionIdx + 1).padStart(2, '0')}</span>
+                        {section.title}
+                      </h3>
                     )}
-                    {section.content.map((item, itemIdx) => (
-                      <p
-                        key={itemIdx}
-                        className="feedback-item"
-                        dangerouslySetInnerHTML={{ __html: renderMarkdown(item) }}
-                      />
-                    ))}
+                    <div className="feedback-items">
+                      {section.content.map((item, itemIdx) => (
+                        <p
+                          key={itemIdx}
+                          className="feedback-item"
+                          dangerouslySetInnerHTML={{ __html: renderMarkdown(item) }}
+                        />
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>

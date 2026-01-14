@@ -1,0 +1,72 @@
+.glass-card-base {
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Variants */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-card-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--backdrop-blur-strong);
+  -webkit-backdrop-filter: var(--backdrop-blur-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-card-solid {
+  background: var(--card-bg-solid);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-md);
+}
+
+/* Hover effect */
+.glass-card-hover {
+  cursor: pointer;
+}
+
+.glass-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-light);
+}
+
+.glass-card-hover:active {
+  transform: translateY(-2px);
+}
+
+/* Glow effects */
+.glass-card-glow {
+  position: relative;
+}
+
+.glass-card-glow-accent {
+  box-shadow: var(--glass-shadow), var(--accent-glow);
+}
+
+.glass-card-glow-accent:hover {
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(239, 68, 68, 0.4);
+}
+
+.glass-card-glow-success {
+  box-shadow: var(--glass-shadow), var(--success-glow);
+}
+
+.glass-card-glow-success:hover {
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(16, 185, 129, 0.4);
+}
+
+/* Responsive padding */
+@media (max-width: 768px) {
+  .glass-card-base {
+    padding: 16px;
+    border-radius: 12px;
+  }
+}

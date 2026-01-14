@@ -5,12 +5,81 @@ import './Landing.css'
 function Landing() {
   const navigate = useNavigate()
   const [isLoaded, setIsLoaded] = useState(false)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const fullTitle = 'frymyresume.cv'
+  const [typedTitle, setTypedTitle] = useState('')
+  const [isTitleTyped, setIsTitleTyped] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoaded(true)
     }, 100)
     return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (!isLoaded) return
+
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (reduceMotion) {
+      setTypedTitle(fullTitle)
+      setIsTitleTyped(true)
+      return
+    }
+
+    setTypedTitle('')
+    setIsTitleTyped(false)
+
+    let index = 0
+    let isCancelled = false
+    let startTimeoutId: number | undefined
+    let nextTimeoutId: number | undefined
+
+    const scheduleNext = () => {
+      if (isCancelled) return
+
+      index += 1
+      setTypedTitle(fullTitle.slice(0, index))
+
+      if (index >= fullTitle.length) {
+        setIsTitleTyped(true)
+        return
+      }
+
+      const nextChar = fullTitle[index] ?? ''
+      const base = 55
+      const jitter = Math.floor(Math.random() * 35)
+      const punctuationPause = nextChar === '.' ? 160 : 0
+      const delay = base + jitter + punctuationPause
+
+      nextTimeoutId = window.setTimeout(scheduleNext, delay)
+    }
+
+    startTimeoutId = window.setTimeout(() => {
+      scheduleNext()
+    }, 80)
+
+    return () => {
+      isCancelled = true
+      if (startTimeoutId) window.clearTimeout(startTimeoutId)
+      if (nextTimeoutId) window.clearTimeout(nextTimeoutId)
+    }
+  }, [isLoaded])
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20,
+      })
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
   return (
@@ -20,7 +89,10 @@ function Landing() {
         <div className={`landing-left ${isLoaded ? 'loaded' : ''}`}>
           <div className="landing-content">
             <div className="brand-section">
-              <h1 className="brand-title">frymyresume.cv</h1>
+              <h1 className={`brand-title ${isTitleTyped ? 'typing-done' : 'typing'}`} aria-label={fullTitle}>
+                {typedTitle}
+                <span className="title-cursor">|</span>
+              </h1>
               <p className="brand-tagline">
                 Test the potential of your resume with AI-powered feedback and a full internship interview pipeline.
               </p>
@@ -83,7 +155,13 @@ function Landing() {
         {/* Right Side - Demo Video */}
         <div className={`landing-right ${isLoaded ? 'loaded' : ''}`}>
           <div className="demo-container">
-            <div className="demo-video">
+            <div
+              className="demo-video"
+              style={{
+                transform: `perspective(1000px) rotateY(${mousePosition.x * 0.02}deg) rotateX(${-mousePosition.y * 0.02}deg)`,
+                transition: 'transform 0.1s ease-out',
+              }}
+            >
               <div className="video-placeholder">
                 <div className="play-button">
                   <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
@@ -95,18 +173,26 @@ function Landing() {
               </div>
             </div>
 
-            <div className="floating-cards">
-              <div className="floating-card card-1">
-                <div className="card-icon">✓</div>
-                <div className="card-text">Resume Passed</div>
-              </div>
-              <div className="floating-card card-2">
-                <div className="card-icon">→</div>
-                <div className="card-text">Technical Round</div>
-              </div>
-              <div className="floating-card card-3">
-                <div className="card-icon">✓</div>
-                <div className="card-text">Interview Ready</div>
+            <div
+              className="floating-cards-wrap"
+              style={{
+                transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
+                transition: 'transform 0.1s ease-out',
+              }}
+            >
+              <div className="floating-cards">
+                <div className="floating-card card-1">
+                  <div className="card-icon">✓</div>
+                  <div className="card-text">Resume Passed</div>
+                </div>
+                <div className="floating-card card-2">
+                  <div className="card-icon">→</div>
+                  <div className="card-text">Technical Round</div>
+                </div>
+                <div className="floating-card card-3">
+                  <div className="card-icon">✓</div>
+                  <div className="card-text">Interview Ready</div>
+                </div>
               </div>
             </div>
           </div>

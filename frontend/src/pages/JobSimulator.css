@@ -7,6 +7,306 @@
   transition: background 0.3s ease;
 }
 
+/* Subtle animated gradient background (matches Landing) */
+.page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.03;
+  background: radial-gradient(circle at 20% 50%, var(--accent) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, var(--accent-light) 0%, transparent 50%);
+  animation: gradientShift 15s ease infinite;
+  pointer-events: none;
+}
+
+[data-theme='light'] .page::before {
+  opacity: 0.02;
+}
+
+/* Intro Screen */
+.intro-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  z-index: 100;
+  animation: fadeIn 0.5s ease-out, fadeOut 0.5s ease-out 1.5s forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+.intro-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.03;
+  background: radial-gradient(circle at 20% 50%, var(--accent) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, var(--accent-light) 0%, transparent 50%);
+  animation: gradientShift 15s ease infinite;
+  pointer-events: none;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(10px, -10px) scale(1.05);
+  }
+}
+
+.intro-content {
+  text-align: center;
+  max-width: 700px;
+  padding: 3rem;
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.intro-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.intro-title::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 4px;
+  background: var(--accent);
+  margin: 1.5rem auto 0;
+  animation: expandWidth 0.9s ease-out 0.6s forwards;
+}
+
+@keyframes expandWidth {
+  to {
+    width: 200px;
+  }
+}
+
+.intro-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+/* Split Screen Source Selection */
+.source-selection-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  z-index: 10;
+}
+
+.home-button {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: all 0.2s ease;
+  z-index: 20;
+}
+
+.home-button:hover {
+  color: var(--text-primary);
+  transform: translateX(-4px);
+}
+
+.source-selection-title {
+  position: absolute;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  z-index: 20;
+  letter-spacing: -0.02em;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.split-screen {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  height: 100vh;
+  width: 100%;
+}
+
+.split-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  margin: 6rem 1rem 1rem 1rem;
+}
+
+.preset-option {
+  background: var(--bg-primary);
+}
+
+.real-option {
+  background: var(--bg-primary);
+}
+
+.split-option:hover {
+  border-color: var(--accent);
+}
+
+.split-content {
+  text-align: center;
+  padding: 2rem;
+  max-width: 400px;
+  animation: fadeInUp 0.8s ease-out;
+  transition: transform 0.3s ease;
+}
+
+.split-option:hover .split-content {
+  transform: scale(1.05);
+}
+
+.split-icon {
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease;
+  color: var(--accent);
+}
+
+.split-icon svg {
+  width: 64px;
+  height: 64px;
+}
+
+.split-option:hover .split-icon {
+  transform: scale(1.1);
+}
+
+.split-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.split-description {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.split-divider {
+  background: linear-gradient(to bottom, transparent, var(--border-color) 20%, var(--border-color) 80%, transparent);
+  width: 1px;
+}
+
+@media (max-width: 768px) {
+  .split-screen {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1px 1fr;
+  }
+
+  .split-divider {
+    background: linear-gradient(to right, transparent, var(--border-color) 20%, var(--border-color) 80%, transparent);
+    height: 1px;
+    width: 100%;
+  }
+
+  .source-selection-title {
+    font-size: 1.5rem;
+    top: 1.5rem;
+  }
+
+  .split-title {
+    font-size: 2rem;
+  }
+
+  .split-description {
+    font-size: 1rem;
+  }
+
+  .split-icon {
+    font-size: 3rem;
+  }
+
+  .real-jobs-toolbar {
+    top: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .real-jobs-search {
+    grid-template-columns: 1fr;
+  }
+
+  .real-jobs-search-button {
+    width: 100%;
+  }
+
+  .real-jobs-meta {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.25rem;
+  }
+}
+
 
 
 [data-theme='light'] .page::before,
@@ -54,6 +354,133 @@
 .simulator-header {
   text-align: center;
   margin-bottom: 2.5rem;
+}
+
+/* More premium header styling for the job-selection screen only */
+.job-selection-header {
+  margin-bottom: 2.25rem;
+}
+
+.job-selection-header h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  display: inline-block;
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+.job-selection-header h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 999px;
+  animation: expandWidthCenter 0.9s ease-out 0.15s forwards;
+}
+
+@keyframes expandWidthCenter {
+  to {
+    width: 62%;
+  }
+}
+
+.job-selection-header .simulator-subtitle {
+  font-size: 1.05rem;
+  max-width: 720px;
+  margin: 0.25rem auto 0;
+}
+
+/* Real job listings toolbar */
+.real-jobs-toolbar {
+  max-width: 900px;
+  margin: 0 auto 1.75rem;
+  padding: 0.9rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
+  position: sticky;
+  top: 1rem;
+  z-index: 6;
+}
+
+.real-jobs-search {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.real-jobs-search-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+  background: color-mix(in srgb, var(--card-bg-solid) 70%, transparent);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.real-jobs-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.real-jobs-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.14);
+}
+
+.real-jobs-search-button {
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  background: var(--accent);
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+}
+
+.real-jobs-search-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(0, 122, 255, 0.22);
+}
+
+.real-jobs-search-button:active {
+  transform: translateY(0);
+}
+
+.real-jobs-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.65rem;
+  padding: 0 0.25rem;
+}
+
+.real-jobs-count {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.real-jobs-hint {
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
 }
 
 .simulator-header h1 {
@@ -389,6 +816,9 @@
 
 .job-selection {
   margin-top: 2rem;
+  max-width: 1250px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .type-filter {
@@ -396,52 +826,129 @@
   gap: 0.5rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
+  justify-content: center;
+  position: sticky;
+  top: 1rem;
+  z-index: 5;
+  padding: 0.75rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  backdrop-filter: blur(14px);
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
 }
 
 .type-filter button {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.05rem;
   background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border: 1px solid transparent;
+  border-radius: 999px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-family: 'Poppins', sans-serif;
 }
 
 .type-filter button:hover {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--border-color) 85%, transparent);
   color: var(--text-primary);
+  background: color-mix(in srgb, var(--card-bg-solid) 55%, transparent);
+  transform: translateY(-1px);
+}
+
+.type-filter button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.14);
+  border-color: var(--accent);
 }
 
 .type-filter .filter-active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--text-primary);
+  box-shadow: 0 10px 24px rgba(0, 122, 255, 0.12);
 }
 
 .jobs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
+  gap: 1.5rem;
   margin-bottom: 3rem;
   width: 100%;
-  padding: 0 1rem;
+  padding: 0;
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .job-card {
   background: var(--card-bg-solid);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+  border-radius: 16px;
+  padding: 1.75rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  animation: cardEnter 0.45s ease-out backwards;
+}
+
+.jobs-grid .job-card:nth-child(1) { animation-delay: 0.02s; }
+.jobs-grid .job-card:nth-child(2) { animation-delay: 0.06s; }
+.jobs-grid .job-card:nth-child(3) { animation-delay: 0.10s; }
+.jobs-grid .job-card:nth-child(4) { animation-delay: 0.14s; }
+.jobs-grid .job-card:nth-child(5) { animation-delay: 0.18s; }
+.jobs-grid .job-card:nth-child(6) { animation-delay: 0.22s; }
+.jobs-grid .job-card:nth-child(7) { animation-delay: 0.26s; }
+.jobs-grid .job-card:nth-child(8) { animation-delay: 0.30s; }
+.jobs-grid .job-card:nth-child(9) { animation-delay: 0.34s; }
+.jobs-grid .job-card:nth-child(10) { animation-delay: 0.38s; }
+.jobs-grid .job-card:nth-child(11) { animation-delay: 0.42s; }
+.jobs-grid .job-card:nth-child(12) { animation-delay: 0.46s; }
+
+.job-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.06), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
 .job-card:hover {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border-color));
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.job-card:hover::before {
+  opacity: 1;
+}
+
+.job-card:active {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+}
+
+.job-card:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.14);
 }
 
 .job-card.selected {
@@ -453,18 +960,19 @@
 .job-header {
   display: flex;
   justify-content: space-between;
-  align-items: start;
+  align-items: center;
   margin-bottom: 0.75rem;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .job-company {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.35rem;
+  font-weight: 700;
   color: var(--text-primary);
   margin: 0;
   flex: 1;
+  letter-spacing: -0.02em;
 }
 
 .job-badges {
@@ -488,70 +996,103 @@
 }
 
 .job-difficulty-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
+  --badge: rgba(148, 163, 184, 0.9);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
   font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  border: 1px solid color-mix(in srgb, var(--badge) 35%, transparent);
+  background: color-mix(in srgb, var(--badge) 10%, transparent);
+  color: color-mix(in srgb, var(--badge) 92%, white);
+}
+
+.job-difficulty-badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--badge);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--badge) 18%, transparent);
 }
 
 .job-difficulty-badge.easy {
-  background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
+  --badge: rgba(34, 197, 94, 0.95);
 }
 
 .job-difficulty-badge.medium {
-  background: rgba(251, 191, 36, 0.1);
-  color: #fbbf24;
+  --badge: rgba(251, 191, 36, 0.95);
 }
 
 .job-difficulty-badge.hard {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  --badge: rgba(239, 68, 68, 0.95);
 }
 
 .job-role {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 1.0625rem;
+  font-weight: 600;
   color: var(--text-primary);
-  margin: 0.5rem 0;
+  margin: 0.6rem 0 0.3rem;
+  letter-spacing: -0.01em;
 }
 
 .job-level {
   font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin: 0.25rem 0;
+  color: var(--text-tertiary);
+  margin: 0 0 0.6rem;
 }
 
 .job-description {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
   line-height: 1.5;
-  margin: 0.75rem 0;
+  margin: 0.75rem 0 1rem;
 }
 
 .job-location {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--text-tertiary);
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .job-apply-button {
-  padding: 0.45rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border-color));
+  background: color-mix(in srgb, var(--card-bg) 85%, transparent);
   color: var(--text-primary);
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s ease,
+    background-color 0.25s ease,
+    color 0.25s ease;
+  backdrop-filter: blur(10px);
 }
 
 .job-apply-button:hover {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 75%, var(--border-color));
+  background: color-mix(in srgb, var(--accent) 12%, var(--card-bg));
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.14);
+  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.16);
+}
+
+.job-apply-button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 12px 30px rgba(99, 102, 241, 0.14),
+    0 0 0 4px rgba(99, 102, 241, 0.22);
 }
 
 .job-apply-button:active {

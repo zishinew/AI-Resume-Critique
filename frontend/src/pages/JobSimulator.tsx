@@ -9,7 +9,7 @@ import TechnicalInterview from '../components/TechnicalInterview'
 import BehavioralInterviewLive from '../components/BehavioralInterviewLive'
 import LoadingScreen from '../components/LoadingScreen'
 
-type Stage = 'source-selection' | 'job-selection' | 'real-job-selection' | 'resume-upload' | 'resume-screening' | 'technical' | 'technical-passed' | 'behavioral' | 'result'
+type Stage = 'intro' | 'source-selection' | 'job-selection' | 'real-job-selection' | 'resume-upload' | 'resume-screening' | 'technical' | 'technical-passed' | 'behavioral' | 'result'
 
 type JobSource = 'preset' | 'real'
 
@@ -48,7 +48,7 @@ interface ApplicationData {
 
 function JobSimulator() {
   const navigate = useNavigate()
-  const [stage, setStage] = useState<Stage>('source-selection')
+  const [stage, setStage] = useState<Stage>('intro')
   const [jobSource, setJobSource] = useState<JobSource | null>(null)
   const [applicationData, setApplicationData] = useState<ApplicationData>({
     selectedJob: null,
@@ -68,6 +68,18 @@ function JobSimulator() {
 
   const [realJobDetailsLoading, setRealJobDetailsLoading] = useState<boolean>(false)
   const [realJobDetailsError, setRealJobDetailsError] = useState<string>('')
+
+  const [presetTilt, setPresetTilt] = useState({ x: 0, y: 0 })
+  const [realTilt, setRealTilt] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    if (stage === 'intro') {
+      const timer = setTimeout(() => {
+        setStage('source-selection')
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [stage])
 
   useEffect(() => {
     const load = async () => {
@@ -246,70 +258,147 @@ function JobSimulator() {
     ? jobs
     : jobs.filter(job => job.difficulty === selectedType)
 
-  const renderSourceSelection = () => (
-    <div className="simulator-content">
-      <header className="simulator-header">
-        <h1>Choose Job Listings</h1>
-        <p className="simulator-subtitle">Use preset jobs or pull real internship listings.</p>
-      </header>
+  const handleTiltMouseMove = (e: React.MouseEvent<HTMLDivElement>, setter: (tilt: { x: number; y: number }) => void) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = (e.clientX - rect.left - rect.width / 2) / rect.width
+    const y = (e.clientY - rect.top - rect.height / 2) / rect.height
+    setter({ x: x * 10, y: y * 10 })
+  }
 
-      <div className="result-card" style={{ maxWidth: 820, margin: '0 auto' }}>
-        <h2 className="result-title" style={{ marginBottom: '0.5rem' }}>How do you want to pick jobs?</h2>
-        <p className="result-description" style={{ marginBottom: '1.5rem' }}>
-          Preset jobs are curated. Real jobs come from SimplifyJobs/Summer2026-Internships.
-        </p>
+  const handleTiltMouseLeave = (setter: (tilt: { x: number; y: number }) => void) => {
+    setter({ x: 0, y: 0 })
+  }
 
-        <div className="button-group" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button
-            className="primary-button"
+  const handleCardGlowMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    e.currentTarget.style.setProperty('--mx', `${x}%`)
+    e.currentTarget.style.setProperty('--my', `${y}%`)
+  }
+
+  const formatDifficulty = (difficulty: string) => {
+    switch (difficulty) {
+      case 'easy':
+        return 'Easy'
+      case 'medium':
+        return 'Medium'
+      case 'hard':
+        return 'Hard'
+      default:
+        return difficulty
+    }
+  }
+
+  const renderIntro = () => {
+    return (
+      <div className="intro-screen">
+        <div className="intro-content">
+          <h1 className="intro-title">
+            Choose Your Job Listing Mode
+          </h1>
+          <p className="intro-subtitle">
+            Select how you want to test your resume against job opportunities
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const renderSourceSelection = () => {
+
+    return (
+      <div className="source-selection-container">
+        <button
+          className="home-button"
+          onClick={() => navigate('/')}
+        >
+          ← Back to Home
+        </button>
+        <h1 className="source-selection-title">Choose Job Listings</h1>
+
+        <div className="split-screen">
+          <div
+            className="split-option preset-option"
             onClick={() => {
               setJobSource('preset')
               setStage('job-selection')
             }}
+            onMouseMove={(e) => handleTiltMouseMove(e, setPresetTilt)}
+            onMouseLeave={() => handleTiltMouseLeave(setPresetTilt)}
+            style={{
+              transform: `perspective(1000px) rotateY(${presetTilt.x}deg) rotateX(${-presetTilt.y}deg)`,
+            }}
           >
-            Use Preset Jobs
-          </button>
-          <button
-            className="secondary-button"
+            <div className="split-content">
+              <div className="split-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <h2 className="split-title">Preset Jobs</h2>
+              <p className="split-description">
+                Curated positions across startups, mid-size companies, and big tech with varying difficulty levels
+              </p>
+            </div>
+          </div>
+
+          <div className="split-divider"></div>
+
+          <div
+            className="split-option real-option"
             onClick={() => {
               setJobSource('real')
               setStage('real-job-selection')
             }}
+            onMouseMove={(e) => handleTiltMouseMove(e, setRealTilt)}
+            onMouseLeave={() => handleTiltMouseLeave(setRealTilt)}
+            style={{
+              transform: `perspective(1000px) rotateY(${realTilt.x}deg) rotateX(${-realTilt.y}deg)`,
+            }}
           >
-            Use Real Job Listings
-          </button>
+            <div className="split-content">
+              <div className="split-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              </div>
+              <h2 className="split-title">Real Listings</h2>
+              <p className="split-description">
+                Live internship opportunities from Summer 2026 on SimplifyJobs with real application links
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   const renderRealJobSelection = () => (
     <div className="simulator-content">
-      <header className="simulator-header">
+      <header className="simulator-header job-selection-header">
         <h1>Real Job Listings</h1>
-        <p className="simulator-subtitle">
-          Powered by SimplifyJobs/Summer2026-Internships (shows all fields provided in the repo list).
-        </p>
+        
       </header>
 
-      <div className="result-card" style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="real-jobs-toolbar">
+        <div className="real-jobs-search">
           <input
+            className="real-jobs-search-input"
             value={realJobsQuery}
             onChange={(e) => setRealJobsQuery(e.target.value)}
-            placeholder="Search company, role, location..."
-            style={{
-              flex: 1,
-              minWidth: 260,
-              padding: '0.75rem 1rem',
-              borderRadius: 10,
-              border: '1px solid var(--border-color)',
-              background: 'var(--card-bg-solid)',
-              color: 'var(--text-primary)',
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') setRealJobsReloadToken((t) => t + 1)
             }}
+            placeholder="Search company, role, location..."
           />
           <button
-            className="primary-button"
+            type="button"
+            className="real-jobs-search-button"
             onClick={() => {
               setRealJobsReloadToken((t) => t + 1)
             }}
@@ -317,6 +406,11 @@ function JobSimulator() {
             Search
           </button>
         </div>
+        <div className="real-jobs-meta">
+          <span className="real-jobs-count">{realJobs.length} results</span>
+          <span className="real-jobs-hint">Tip: press Enter to search</span>
+        </div>
+
         {realJobsError && (
           <div className="error-message" style={{ marginTop: '1rem' }}>{realJobsError}</div>
         )}
@@ -328,6 +422,7 @@ function JobSimulator() {
             key={`${row.company}-${row.role}-${row.location}-${idx}`}
             className="job-card"
             onClick={() => handleRealJobSelect(row)}
+            onMouseMove={handleCardGlowMouseMove}
             style={{ cursor: 'pointer' }}
           >
             <div className="job-header">
@@ -358,7 +453,7 @@ function JobSimulator() {
 
   const renderJobSelection = () => (
     <div className="simulator-content">
-      <header className="simulator-header">
+      <header className="simulator-header job-selection-header">
         <h1>Job Application Simulator</h1>
         <p className="simulator-subtitle">
           Select a position to apply for and experience the full interview process
@@ -366,28 +461,32 @@ function JobSimulator() {
       </header>
 
       <div className="job-selection">
-        <div className="type-filter">
+        <div className="type-filter" role="tablist" aria-label="Job difficulty filters">
           <button
             className={selectedType === 'all' ? 'filter-active' : ''}
             onClick={() => setSelectedType('all')}
+            type="button"
           >
             All Jobs
           </button>
           <button
             className={selectedType === 'easy' ? 'filter-active' : ''}
             onClick={() => setSelectedType('easy')}
+            type="button"
           >
             Easy (Startups)
           </button>
           <button
             className={selectedType === 'medium' ? 'filter-active' : ''}
             onClick={() => setSelectedType('medium')}
+            type="button"
           >
             Medium
           </button>
           <button
             className={selectedType === 'hard' ? 'filter-active' : ''}
             onClick={() => setSelectedType('hard')}
+            type="button"
           >
             Hard (Big Tech)
           </button>
@@ -399,11 +498,12 @@ function JobSimulator() {
               key={job.id}
               className="job-card"
               onClick={() => handleJobSelect(job)}
+              onMouseMove={handleCardGlowMouseMove}
             >
               <div className="job-header">
                 <h3 className="job-company">{job.company}</h3>
                 <div className="job-badges">
-                  <span className={`job-difficulty-badge ${job.difficulty}`}>{job.difficulty}</span>
+                  <span className={`job-difficulty-badge ${job.difficulty}`}>{formatDifficulty(job.difficulty)}</span>
                 </div>
               </div>
               <p className="job-role">{job.role}</p>
@@ -830,25 +930,32 @@ function JobSimulator() {
       <div className="page">
         {stage !== 'technical' && (
           <div className="page-container">
-            <button
-              className="back-button"
-              onClick={() => {
-                if (stage === 'resume-upload') {
-                  if (jobSource === 'real') setStage('real-job-selection')
-                  else setStage('job-selection')
-                  return
-                }
-                if (stage === 'job-selection' || stage === 'real-job-selection' || stage === 'source-selection') {
+            {stage !== 'intro' && (
+              <button
+                className="back-button"
+                onClick={() => {
+                  if (stage === 'resume-upload') {
+                    if (jobSource === 'real') setStage('real-job-selection')
+                    else setStage('job-selection')
+                    return
+                  }
+                  if (stage === 'source-selection') {
+                    setStage('intro')
+                    return
+                  }
+                  if (stage === 'job-selection' || stage === 'real-job-selection') {
+                    setStage('source-selection')
+                    return
+                  }
+                  // default fallback
                   navigate('/')
-                  return
-                }
-                // default fallback
-                navigate('/')
-              }}
-            >
-              ← {stage === 'resume-upload' ? 'Back to Jobs' : 'Back to Home'}
-            </button>
+                }}
+              >
+                ← {stage === 'resume-upload' ? 'Back to Jobs' : stage === 'source-selection' ? 'Back' : stage === 'job-selection' || stage === 'real-job-selection' ? 'Back to Mode Selection' : 'Back to Home'}
+              </button>
+            )}
 
+            {stage === 'intro' && renderIntro()}
             {stage === 'source-selection' && renderSourceSelection()}
             {stage === 'job-selection' && renderJobSelection()}
             {stage === 'real-job-selection' && renderRealJobSelection()}
