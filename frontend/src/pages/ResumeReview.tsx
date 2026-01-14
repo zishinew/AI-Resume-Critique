@@ -47,7 +47,6 @@ function ResumeReview() {
       const formData = new FormData()
       formData.append('file', file)
       if (jobRole) formData.append('job_role', jobRole)
-      if (notes) formData.append('notes', notes)
 
       const response = await fetch('http://localhost:8000/api/analyze', {
         method: 'POST',
