@@ -62,6 +62,7 @@ function TechnicalInterview({ company, role, difficulty, onComplete }: Technical
   const editorRef = useRef<any>(null)
   const questionsRef = useRef<Question[]>([])
   const solvedRef = useRef<Record<string, boolean>>({})
+  const gradeResultByIdRef = useRef<Record<string, GradeResult | null>>({})
 
   useEffect(() => {
     solvedRef.current = solved
@@ -70,6 +71,10 @@ function TechnicalInterview({ company, role, difficulty, onComplete }: Technical
   useEffect(() => {
     questionsRef.current = questions
   }, [questions])
+
+  useEffect(() => {
+    gradeResultByIdRef.current = gradeResultById
+  }, [gradeResultById])
 
   const getOrCreateClientId = (): string => {
     const key = 'offerready_client_id'
@@ -736,9 +741,22 @@ public:
 
   const finishRound = () => {
     const ids = questionsRef.current.map((q) => q.id)
-    const solvedCount = ids.filter((id) => solvedRef.current[id]).length
-    const pct = ids.length ? (solvedCount / ids.length) * 100 : 0
-    onComplete(pct)
+    
+    // Calculate average score from all questions
+    let totalScore = 0
+    let questionsWithResults = 0
+    
+    ids.forEach((id) => {
+      const result = gradeResultByIdRef.current[id]
+      if (result) {
+        totalScore += result.score
+        questionsWithResults++
+      }
+    })
+    
+    // Calculate final percentage (average of all question scores)
+    const finalScore = questionsWithResults > 0 ? totalScore / questionsWithResults : 0
+    onComplete(finalScore)
   }
 
   const handleEditorChange = (value: string | undefined) => {

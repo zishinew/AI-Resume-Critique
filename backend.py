@@ -2624,6 +2624,56 @@ async def generate_technical_problem(request: GenerateTechnicalProblemRequest):
         raise HTTPException(status_code=500, detail=f"Failed to generate problem: {str(e)}")
 
 
+def analyze_time_complexity(code: str, question_id: str, language: str) -> bool:
+    """
+    Analyze if the solution has optimal time complexity.
+    Returns True if optimal, False otherwise.
+    """
+    # Define optimal complexity patterns for common questions
+    optimal_patterns = {
+        "two-sum": ["hash", "dict", "map", "set"],  # O(n) with hash map
+        "contains-duplicate": ["set", "hash"],  # O(n) with set
+        "valid-anagram": ["sorted", "counter", "hash", "dict"],  # O(n log n) or O(n)
+        "best-time-stock": ["max"],  # O(n) single pass
+        "valid-parentheses": ["stack", "append", "push", "pop"],  # O(n) with stack
+        "longest-consecutive": ["set", "hash"],  # O(n) with set
+        "three-sum": ["sort"],  # O(n²) with two pointers
+        "container-with-most-water": ["two.*pointer", "left.*right"],  # O(n) two pointers
+        "product-except-self": ["prefix", "suffix", "forward", "backward"],  # O(n) prefix/suffix
+        "merge-intervals": ["sort"],  # O(n log n) with sorting
+        "top-k-frequent": ["heap", "counter", "bucket"],  # O(n) or O(n log k)
+        "group-anagrams": ["sort.*join", "sorted", "counter"],  # O(n * k log k)
+    }
+    
+    # Suboptimal patterns that indicate inefficiency
+    suboptimal_patterns = {
+        "two-sum": ["for.*for", "nested.*loop"],  # O(n²) nested loops
+        "contains-duplicate": ["for.*for"],  # O(n²) nested loops  
+        "longest-consecutive": ["for.*for"],  # O(n²) without set
+        "product-except-self": ["division", "/"],  # Using division (technically works but not the intended solution)
+    }
+    
+    code_lower = code.lower()
+    
+    # Check for suboptimal patterns first
+    if question_id in suboptimal_patterns:
+        import re
+        for pattern in suboptimal_patterns[question_id]:
+            if re.search(pattern, code_lower):
+                return False
+    
+    # Check for optimal patterns
+    if question_id in optimal_patterns:
+        for pattern in optimal_patterns[question_id]:
+            import re
+            if re.search(pattern, code_lower):
+                return True
+        return False  # No optimal pattern found
+    
+    # For questions not in the list, assume optimal (no penalty)
+    return True
+
+
 @app.post("/api/technical/grade")
 async def grade_technical_problem(request: GradeTechnicalProblemRequest):
     """Grade candidate code against a generated problem session."""
@@ -2872,7 +2922,18 @@ async def run_code(request: RunCodeRequest):
         score = (passed_count / total_tests) * 100 if total_tests > 0 else 0
         all_passed = passed_count == total_tests
 
-        print(f"Final results: {passed_count}/{total_tests} passed, score={score}%")
+        # Analyze time complexity if submitted
+        complexity_penalty = 0
+        if request.run_mode == "submit":
+            optimal_complexity = analyze_time_complexity(request.code, question.get("id", ""), request.language)
+            if not optimal_complexity:
+                complexity_penalty = 20  # 20% penalty for non-optimal solution
+        
+        # Apply complexity penalty only if all tests passed
+        if all_passed and complexity_penalty > 0:
+            score = max(0, score - complexity_penalty)
+
+        print(f"Final results: {passed_count}/{total_tests} passed, score={score}%, complexity_penalty={complexity_penalty}%")
         print(f"Test results array length: {len(test_results)}")
 
         return JSONResponse(content={
