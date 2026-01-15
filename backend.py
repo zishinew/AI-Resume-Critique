@@ -1001,101 +1001,136 @@ async def analyze_resume(
         Therefore, projects alone carry SIGNIFICANTLY LESS WEIGHT than they did previously. Focus heavily on:
         - REAL work experience with quantifiable impact
         - Duration and quality of professional roles
-        - Competitive achievements (hackathons, case competitions with placements)
+        - Competitive achievements (hackathons WON, case competitions with TOP placements only)
         - Academic excellence (high GPA, scholarships, awards)
 
-        SATURATED MARKET CALIBRATION:
-        - The market is saturated, so you must be strict.
-        - Still, do NOT artificially deflate scores: use the score bands below.
-        - 85+ should indicate FAANG-ready (or already FAANG-tier experience).
-        - If you are uncertain, score LOWER.
+        SATURATED MARKET CALIBRATION - EXTREMELY STRICT:
+        - The market is HEAVILY saturated with candidates. You must be RUTHLESSLY STRICT.
+        - Most resumes are mediocre. DO NOT give the benefit of the doubt.
+        - If you see vague bullets, buzzwords, or no metrics - PENALIZE HEAVILY.
+        - Projects without clear evidence of real usage, deployment, testing, or architecture decisions are worth MINIMAL points.
+        - University club projects are NOT professional experience unless they show exceptional scope/impact.
 
-        DECENT STUDENT (Typical Score: 60-65):
+        BEGINNER/WEAK STUDENT (Typical Score: 30-55):
         - First or second year university student
-        - Some relevant experience (club/dev team/research assistant) OR a small internship
-        - 1-3 projects that are coherent and shipped, but not clearly differentiated
-        - Some evidence of skills, but limited quantified impact
-        REALISTIC OUTCOME: Can land interviews at many companies, but not a standout.
+        - Only tutorial-level projects OR projects with no clear depth
+        - No internships or only very basic/short internships
+        - Vague bullet points with no metrics or concrete achievements
+        - Generic skills lists with no evidence
+        REALISTIC OUTCOME: Will struggle to get interviews at competitive companies.
 
-        NICE EXPERIENCES (Typical Score: 65-75):
-        - 1 real internship OR strong university team work with clear ownership
-        - Some quantifiable impact (metrics, scope, users, performance, cost, reliability)
-        - Projects show depth beyond tutorials (architecture, testing, deployment, real usage)
-        REALISTIC OUTCOME: Competitive for many mid-tier companies.
+        DECENT STUDENT (Typical Score: 55-65):
+        - Has 1 real internship OR strong university dev team role with measurable contributions
+        - 2-3 projects that show SOME depth (testing, deployment, or real users)
+        - Some quantifiable metrics (even if modest)
+        - Clear technical skills with evidence of application
+        REALISTIC OUTCOME: Can potentially land interviews at mid-tier companies with effort.
+
+        INTERMEDIATE/SOLID (Typical Score: 65-75):
+        - Multiple real internships with clear ownership and impact
+        - Projects show real depth: architecture decisions, testing, deployment, scale, real users with metrics
+        - Competitive achievements (hackathon wins, not just participation)
+        - Clear evidence of technical maturity and professional work quality
+        REALISTIC OUTCOME: Competitive for mid-tier and some upper-tier companies.
 
         STRONG (Typical Score: 75-85):
-        - Strong internship(s) with meaningful ownership and impact
-        - Projects are robust (tests, deployment, scalability, real users) and/or competitive achievements
-        - Clear evidence they can operate like a junior engineer (shipping, reliability, collaboration)
-        REALISTIC OUTCOME: Strong candidate; could be competitive for top-tier interviews.
+        - 2+ strong internships with significant impact at known companies
+        - Projects are production-quality with clear technical depth
+        - Leadership roles OR competitive programming success OR published research
+        - Multiple quantifiable achievements showing scope and impact
+        REALISTIC OUTCOME: Competitive for top-tier companies, strong interview candidate.
 
-        FAANG READY (Score: 85+):
-        - FAANG/unicorn internship and/or already FAANG-level experience
-        - Or: rare signals (elite competitive programming, major OSS leadership, proven product traction)
-        - Multiple strong experiences with clear impact
-        REALISTIC OUTCOME: Genuinely ready for FAANG-level screens.
+        EXCEPTIONAL/FAANG READY (Score: 85+):
+        - FAANG/unicorn internship(s) with major impact
+        - Elite competitive programming (Codeforces Master+, ICPC medalist, IOI/USACO top tiers)
+        - Major OSS contributions (maintainer of widely-used projects)
+        - Published research at credible venues OR product with significant traction (10k+ users)
+        - Multiple exceptional signals, not just one
+        REALISTIC OUTCOME: Ready for FAANG-level interviews, likely to succeed.
 
-        SCORING GUIDELINES (BE STRICT):
-        - 85-92: FAANG Ready (rare)
-        - 75-84: Strong
-        - 65-74: Nice experiences
-        - 60-64: Decent student resume
-        - 45-59: Needs work
-        - 0-44: Major gaps
+        SCORING GUIDELINES (EXTREMELY STRICT - NO MERCY):
+        - 90-100: Reserved for truly exceptional candidates (less than 1% of resumes)
+        - 85-89: FAANG Ready with multiple strong signals
+        - 75-84: Strong candidate with proven track record
+        - 65-74: Intermediate/Solid with real experience and depth
+        - 55-64: Decent but unremarkable
+        - 45-54: Weak/Beginner with minimal real experience
+        - 30-44: Very weak, major gaps
+        - 0-29: Essentially unqualified
 
-        DO NOT INFLATE SCORES.
-        - Assume projects may be AI-assisted unless there is clear evidence of depth (design decisions, scale, tests, perf work, deployment, users).
-        - A typical student resume with only projects should NOT be above ~60.
-        University design teams, research positions, and dev clubs COUNT as real experience.
+        BEGINNER RESUME HARD CAP: If the resume shows beginner-level experience (no real internships, only basic projects, first/second year student with minimal work), the score MUST NOT exceed 70. Period.
+
+        INTERMEDIATE RESUME RANGE: If the resume shows intermediate-level experience (1-2 internships, decent projects with some depth), score in the 70-80 range ONLY if truly justified.
+
+        DO NOT INFLATE SCORES - BE RUTHLESSLY STRICT:
+        - Assume projects are AI-assisted unless proven otherwise (tests, deployment, architecture docs, real users with metrics)
+        - Generic bullets like "developed X" or "implemented Y" without metrics = MINIMAL value
+        - "Participated in" or "helped with" = essentially worthless
+        - "Familiar with" or "knowledge of" = not real skill evidence
+        - Start at 40 by default. Add points ONLY for concrete evidence. Subtract for vagueness, buzzwords, or inflated claims.
+        - University design teams/research/dev clubs count as real experience ONLY if there's clear ownership and deliverables
         """
 
         prompt = f"""Today is {date.today()}.
-        You are a hiring manager at a top company in the field of {job_role if job_role else "various industries"}.
-        You have received a resume for review. Evaluate this resume against the reference examples provided.
+        You are a RUTHLESSLY STRICT hiring manager at a top company in the field of {job_role if job_role else "various industries"}.
+        Your job is to AGGRESSIVELY filter out weak candidates. You have ZERO MERCY and NO BIAS toward making candidates feel good.
+        
+        The market is HEAVILY saturated. Most resumes are mediocre. You must be EXTREMELY STRICT.
 
         {reference_examples}
 
         RESUME TO REVIEW:
         {text_content}
 
-        INSTRUCTIONS:
+        CRITICAL INSTRUCTIONS - READ CAREFULLY:
         1. Compare this resume to the REFERENCE resumes provided above
-        2. Determine which level this resume can realistically achieve
-          3. Assign a PRECISE score from 1-100 based on these STRICT SCORING GUIDELINES:
-              - 0-44: Major gaps
-              - 45-59: Needs work
-              - 60-64: Decent student resume
-              - 65-74: Nice experiences
-              - 75-84: Strong
-              - 85-92: FAANG ready (rare)
-              - 93-100: Reserved for extreme outliers only
-          4. Be EXTREMELY STRICT and REALISTIC for a saturated market.
-        5. Focus on: professional experience, university dev team roles, project depth, competitive achievements, quantifiable impact.
-        6. GPA is nice to have but NOT a major deciding factor - focus on actual technical work.
-        7. University design teams, research positions, and dev clubs count as real experience.
-        8. Default starting point is 55. Add points only for evidence; subtract for vagueness/buzzwords/no metrics.
-        9. Provide an INTEGER score (whole number).
+        2. Determine the TRUE experience level (Beginner/Decent/Intermediate/Strong/Exceptional)
+        3. Assign a BRUTALLY HONEST score from 0-100 based on these STRICT SCORING GUIDELINES:
+              - 90-100: Reserved for truly exceptional candidates (less than 1% of resumes) - FAANG+ ready with multiple rare signals
+              - 85-89: FAANG Ready with proven track record
+              - 75-84: Strong candidate with 2+ quality internships and real impact
+              - 70-74: Upper-intermediate with solid experience
+              - 65-69: Intermediate with decent experience
+              - 55-64: Decent but unremarkable
+              - 45-54: Weak/Beginner with minimal experience
+              - 30-44: Very weak with major gaps
+              - 0-29: Essentially unqualified
+
+        HARD RULES - NON-NEGOTIABLE:
+        - BEGINNER RESUMES (no real internships, only basic projects, early student) CANNOT score above 70. EVER.
+        - INTERMEDIATE RESUMES (1-2 internships, decent projects) can score 70-80 ONLY if truly justified with clear depth and impact.
+        - Projects without deployment, testing, real users, or architecture docs are worth MINIMAL points.
+        - "Participated in", "helped with", "familiar with", "knowledge of" = worthless fluff.
+        - Vague bullets without metrics = RED FLAG, penalize heavily.
+        - Start at 40 by default. Add points ONLY for concrete, verifiable achievements.
+        
+        4. BE RUTHLESSLY CRITICAL - This is NOT about being nice, it's about being ACCURATE.
+        5. Focus on: REAL work experience, measurable impact, competitive achievements, technical depth.
+        6. GPA doesn't matter much - focus on actual work and achievements.
+        7. If you're uncertain between two scores, ALWAYS choose the LOWER one.
+        8. Provide an INTEGER score (whole number).
+        9. In your assessment, be BLUNT about weaknesses. Don't sugarcoat anything.
 
         Respond in this EXACT format:
         SCORE: [number between 0-100]
 
         STRENGTHS:
-        - [Bullet point 1]
+        - [Bullet point 1 - be specific and concrete, or write "Limited strengths identified"]
         - [Bullet point 2]
         - [Bullet point 3]
 
         AREAS FOR IMPROVEMENT:
-        - [Bullet point 1]
-        - [Bullet point 2]
-        - [Bullet point 3]
+        - [Bullet point 1 - be BLUNT and SPECIFIC about weaknesses]
+        - [Bullet point 2 - don't hold back]
+        - [Bullet point 3 - be ruthlessly honest]
 
         RECOMMENDATIONS:
-        - [Actionable recommendation 1]
+        - [Actionable recommendation 1 - be specific and demanding]
         - [Actionable recommendation 2]
         - [Actionable recommendation 3]
 
         OVERALL ASSESSMENT:
-        [2-3 sentences summarizing the resume's readiness level and main takeaways]
+        [2-3 sentences summarizing the resume's REALISTIC readiness level. Be BRUTALLY HONEST. If it's weak, say so clearly. No sugarcoating.]
 
         Additional Notes: {additional_notes}
         Tailor your feedback for {job_role if job_role else "general applications"}
