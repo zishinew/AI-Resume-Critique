@@ -1572,9 +1572,9 @@ TECHNICAL_QUESTIONS = {
                 {"input": {"nums": [1, 2], "target": 3}, "expectedOutput": [0, 1]},
                 {"input": {"nums": [10, 20, 30, 40, 50], "target": 90}, "expectedOutput": [3, 4]},
                 {"input": {"nums": [1, 3, 4, 2], "target": 6}, "expectedOutput": [2, 3]},
-                {"input": {"nums": [-5, -3, -1, 0, 2, 4], "target": -4}, "expectedOutput": [0, 2]},
+                {"input": {"nums": [-5, -3, -1, 0, 2, 4], "target": -4}, "expectedOutput": [1, 2]},
                 {"input": {"nums": [100, 200, 300, 400], "target": 700}, "expectedOutput": [2, 3]},
-                {"input": {"nums": [15, 11, 7, 2], "target": 9}, "expectedOutput": [1, 3]},
+                {"input": {"nums": [15, 11, 7, 2], "target": 9}, "expectedOutput": [2, 3]},
                 {"input": {"nums": [3, 2, 4], "target": 6}, "expectedOutput": [1, 2]}
             ]
         },

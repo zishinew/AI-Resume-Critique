@@ -858,8 +858,10 @@ public:
 
       {/* Submit Results Overlay */}
       {showSubmitModal && submitModalResult && !aiAnalysisLoading && (
-        <div className="submit-success-overlay">
-          <div className="submit-success-checkmark">✓</div>
+        <div className={`submit-success-overlay ${submitModalResult.passed ? 'success' : 'failure'}`}>
+          <div className={`submit-success-checkmark ${submitModalResult.passed ? 'success' : 'failure'}`}>
+            {submitModalResult.passed ? '✓' : '✗'}
+          </div>
           <h2 className="submit-success-message">
             {submitModalResult.passed ? 'All test cases passed!' : 'Some test cases failed'}
           </h2>
