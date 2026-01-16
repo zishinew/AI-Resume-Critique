@@ -1,5 +1,9 @@
 # frymyresume.cv
 
+
+https://github.com/user-attachments/assets/39455b53-8ce1-47da-b9dd-ec366d323e34
+
+
 [![Built with](https://img.shields.io/badge/Built_with-Google_Gemini-blue)](https://deepmind.google/technologies/gemini/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![React](https://img.shields.io/badge/React-18-blue)](https://react.dev/)
@@ -173,4 +177,5 @@ The original Streamlit app is still available in `main.py`:
 ```bash
 streamlit run main.py
 ```
+
 
