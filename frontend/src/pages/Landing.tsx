@@ -73,6 +73,9 @@ function Landing() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      // Disable 3D transforms on mobile/tablet for better performance
+      if (window.innerWidth <= 1024) return
+
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 20,
         y: (e.clientY / window.innerHeight - 0.5) * 20,

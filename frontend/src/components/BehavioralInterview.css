@@ -119,6 +119,7 @@
   padding: 1px;
   background: linear-gradient(135deg, rgba(248, 113, 113, 0.4), rgba(239, 68, 68, 0.2), rgba(185, 28, 28, 0.15));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
@@ -229,4 +230,69 @@
   border-radius: 8px;
   border: 1px solid rgba(220, 38, 38, 0.3);
   margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .behavioral-interview {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .interview-status {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .question-display {
+    padding: 1.5rem;
+  }
+
+  .question-text {
+    font-size: 1rem;
+  }
+
+  .response-section h3 {
+    font-size: 0.95rem;
+  }
+
+  .transcript {
+    padding: 1rem 1.125rem;
+    min-height: 120px;
+  }
+
+  .transcript-body {
+    padding: 0.85rem 1rem;
+  }
+
+  .transcript-text {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .behavioral-interview {
+    padding: 1.25rem 1rem;
+  }
+
+  .question-display {
+    padding: 1.25rem;
+  }
+
+  .question-display h2 {
+    font-size: 1.1rem;
+  }
+
+  .question-text {
+    font-size: 0.95rem;
+  }
+
+  .transcript {
+    padding: 0.9rem 1rem;
+  }
+
+  .transcript-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
 }

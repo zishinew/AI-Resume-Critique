@@ -383,6 +383,9 @@ function JobSimulator() {
     : jobs.filter(job => job.difficulty === selectedType)
 
   const handleTiltMouseMove = (e: React.MouseEvent<HTMLDivElement>, setter: (tilt: { x: number; y: number }) => void) => {
+    // Disable tilt effect on mobile/tablet for better performance
+    if (window.innerWidth <= 768) return
+
     const rect = e.currentTarget.getBoundingClientRect()
     const x = (e.clientX - rect.left - rect.width / 2) / rect.width
     const y = (e.clientY - rect.top - rect.height / 2) / rect.height
@@ -1132,17 +1135,13 @@ function JobSimulator() {
       <div className="page">
         {stage !== 'technical' && (
           <div className="page-container">
-            {stage !== 'intro' && (
+            {stage !== 'intro' && stage !== 'source-selection' && (
               <button
                 className="back-button"
                 onClick={() => {
                   if (stage === 'resume-upload') {
                     if (jobSource === 'real') setStage('real-job-selection')
                     else setStage('job-selection')
-                    return
-                  }
-                  if (stage === 'source-selection') {
-                    setStage('intro')
                     return
                   }
                   if (stage === 'job-selection' || stage === 'real-job-selection') {
@@ -1153,7 +1152,7 @@ function JobSimulator() {
                   navigate('/')
                 }}
               >
-                ← {stage === 'resume-upload' ? 'Back to Jobs' : stage === 'source-selection' ? 'Back' : stage === 'job-selection' || stage === 'real-job-selection' ? 'Back to Mode Selection' : 'Back to Home'}
+                ← {stage === 'resume-upload' ? 'Back to Jobs' : stage === 'job-selection' || stage === 'real-job-selection' ? 'Back to Mode Selection' : 'Back to Home'}
               </button>
             )}
 

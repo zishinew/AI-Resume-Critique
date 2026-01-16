@@ -36,6 +36,9 @@ function ResumeReview() {
   }
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Disable tilt effect on mobile/tablet for better performance
+    if (window.innerWidth <= 1024) return
+
     const card = e.currentTarget
     const rect = card.getBoundingClientRect()
     const x = e.clientX - rect.left

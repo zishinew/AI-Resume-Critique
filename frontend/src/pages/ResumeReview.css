@@ -530,37 +530,289 @@
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .resume-review-page {
+    padding: 2.5rem 1.5rem;
+  }
+
+  .review-title {
+    font-size: clamp(2.25rem, 5vw, 2.5rem);
+  }
+
+  .review-subtitle {
+    font-size: 1.0625rem;
+  }
+
+  .upload-card {
+    padding: 1.75rem;
+    /* Disable 3D transforms on tablet */
+    transform: none !important;
+  }
+}
+
 @media (max-width: 768px) {
   .resume-review-page {
     padding: 2rem 1rem;
   }
 
+  .review-header {
+    margin-bottom: 3rem;
+  }
+
   .review-title {
-    font-size: 2rem;
+    font-size: clamp(1.75rem, 6vw, 2rem);
   }
 
   .review-subtitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .review-upload-section {
+    max-width: 100%;
   }
 
   .upload-card {
     padding: 1.5rem;
+    border-radius: 12px;
   }
 
   .file-upload-label {
     flex-direction: column;
     text-align: center;
+    padding: 1.25rem;
+  }
+
+  .upload-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .upload-prompt {
+    font-size: 0.95rem;
+  }
+
+  .upload-hint {
+    font-size: 0.8125rem;
+  }
+
+  .file-name {
+    font-size: 0.95rem;
+  }
+
+  .file-size {
+    font-size: 0.8125rem;
+  }
+
+  .job-role-label {
+    font-size: 0.875rem;
+  }
+
+  .job-role-input {
+    font-size: 0.9375rem;
+    padding: 0.8125rem 0.875rem;
+  }
+
+  .analyze-button {
+    font-size: 1rem;
+    padding: 0.9375rem 1.5rem;
+  }
+
+  .feedback-header {
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .feedback-title {
+    font-size: clamp(1.5rem, 5vw, 1.75rem);
+  }
+
+  .new-analysis-button {
+    font-size: 0.875rem;
+    padding: 0.65rem 1.25rem;
   }
 
   .feedback-section {
     padding: 1.5rem;
+    border-radius: 10px;
   }
 
   .feedback-section-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    gap: 0.5rem;
+  }
+
+  .section-number {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.8125rem;
+  }
+
+  .feedback-item {
+    font-size: 0.9375rem;
+    padding-left: 1.25rem;
+  }
+
+  .feedback-item::before {
+    top: 0.55rem;
+    width: 5px;
+    height: 5px;
+  }
+
+  .error-message {
+    font-size: 0.875rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .error-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .back-button {
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .resume-review-page {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .review-header {
+    margin-bottom: 2rem;
+  }
+
+  .review-title {
+    font-size: clamp(1.5rem, 7vw, 1.75rem);
+  }
+
+  .review-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .upload-card {
+    padding: 1.25rem;
+    border-radius: 10px;
+  }
+
+  .file-upload-label {
+    padding: 1rem;
+  }
+
+  .upload-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .upload-prompt {
+    font-size: 0.875rem;
+  }
+
+  .upload-hint {
+    font-size: 0.75rem;
+  }
+
+  .file-name {
+    font-size: 0.875rem;
+  }
+
+  .file-size {
+    font-size: 0.75rem;
+  }
+
+  .job-role-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .job-role-label {
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .job-role-input {
+    font-size: 0.875rem;
+    padding: 0.75rem 0.875rem;
+  }
+
+  .analyze-button {
+    font-size: 0.9375rem;
+    padding: 0.875rem 1.25rem;
+  }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+  }
+
+  .feedback-header {
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
   }
 
   .feedback-title {
-    font-size: 1.5rem;
+    font-size: clamp(1.25rem, 6vw, 1.5rem);
+  }
+
+  .new-analysis-button {
+    font-size: 0.8125rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .feedback-content {
+    gap: 1.5rem;
+  }
+
+  .feedback-section {
+    padding: 1.25rem;
+    border-radius: 10px;
+  }
+
+  .feedback-section-title {
+    font-size: 0.875rem;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-number {
+    min-width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .feedback-items {
+    gap: 0.65rem;
+  }
+
+  .feedback-item {
+    font-size: 0.875rem;
+    padding-left: 1.125rem;
+    line-height: 1.65;
+  }
+
+  .feedback-item::before {
+    top: 0.5rem;
+    width: 4px;
+    height: 4px;
+  }
+
+  .feedback-item code {
+    font-size: 0.8125rem;
+  }
+
+  .error-message {
+    font-size: 0.8125rem;
+    padding: 0.75rem 0.875rem;
+    gap: 0.65rem;
+  }
+
+  .error-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .back-button {
+    font-size: 0.8125rem;
+    margin-bottom: 1.25rem;
   }
 }
