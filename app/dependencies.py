@@ -1,65 +1,92 @@
 from typing import Optional
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
-from app.database import get_db
-from app.services.auth import decode_token
-from app.models.user import User
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import JWTError, jwt
+from pydantic import BaseModel
+from app.config import SUPABASE_JWT_SECRET
+from app.supabase_client import get_supabase_admin
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+security = HTTPBearer(auto_error=False)
+
+
+class SupabaseUser(BaseModel):
+    """Represents an authenticated Supabase user."""
+    id: str  # UUID as string
+    email: str
+    username: str
+    profile_picture: Optional[str] = None
+    is_active: bool = True
+    created_at: Optional[str] = None
+    auth_provider: str = "email"
+    is_verified: bool = False
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-) -> User:
-    """Get the current authenticated user. Raises 401 if not authenticated."""
-    if not token:
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> SupabaseUser:
+    """Get the current authenticated user from Supabase JWT."""
+    if not credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    payload = decode_token(token)
-    user_id = payload.get("sub")
+    token = credentials.credentials
 
-    if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+    try:
+        # Decode and verify Supabase JWT
+        payload = jwt.decode(
+            token,
+            SUPABASE_JWT_SECRET,
+            algorithms=["HS256"],
+            audience="authenticated",
         )
 
-    user = db.query(User).filter(User.id == int(user_id)).first()
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+            )
+
+        # Fetch user profile from Supabase
+        supabase = get_supabase_admin()
+        profile_response = supabase.table("profiles").select("*").eq("id", user_id).single().execute()
+
+        profile = profile_response.data if profile_response.data else {}
+
+        # Determine auth provider from app_metadata
+        app_metadata = payload.get("app_metadata", {})
+        provider = app_metadata.get("provider", "email")
+
+        return SupabaseUser(
+            id=user_id,
+            email=payload.get("email", ""),
+            username=profile.get("username", payload.get("email", "").split("@")[0]),
+            profile_picture=profile.get("profile_picture"),
+            is_active=profile.get("is_active", True),
+            created_at=profile.get("created_at"),
+            auth_provider=provider,
+            is_verified=payload.get("email_confirmed_at") is not None,
         )
 
-    if not user.is_active:
+    except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account is disabled",
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-
-    return user
 
 
 async def get_current_user_optional(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-) -> Optional[User]:
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> Optional[SupabaseUser]:
     """Get the current user if authenticated, None otherwise."""
-    if not token:
+    if not credentials:
         return None
+
     try:
-        payload = decode_token(token)
-        user_id = payload.get("sub")
-        if user_id:
-            user = db.query(User).filter(User.id == int(user_id)).first()
-            if user and user.is_active:
-                return user
-    except Exception:
-        pass
-    return None
+        return await get_current_user(credentials)
+    except HTTPException:
+        return None

@@ -1,68 +1,78 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
+import { supabase } from '../lib/supabase'
+import type { User as SupabaseAuthUser, Session } from '@supabase/supabase-js'
 import { API_BASE_URL } from '../config'
 
 interface User {
-  id: number
+  id: string
   email: string
   username: string
   profile_picture: string | null
   auth_provider: string
   is_verified: boolean
-  created_at: string
+  created_at: string | null
 }
 
 interface AuthContextType {
   user: User | null
+  session: Session | null
   isLoading: boolean
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, username: string) => Promise<void>
-  logout: () => void
-  loginWithGoogle: () => void
-  loginWithGitHub: () => void
+  logout: () => Promise<void>
+  loginWithGoogle: () => Promise<void>
+  loginWithGitHub: () => Promise<void>
   refreshUser: () => Promise<void>
-  getAccessToken: () => string | null
+  getAccessToken: () => Promise<string | null>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token')
-    if (token) {
-      refreshUser()
-    } else {
-      setIsLoading(false)
-    }
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      if (session) {
+        fetchUserProfile(session.access_token)
+      } else {
+        setIsLoading(false)
+      }
+    })
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setSession(session)
+        if (session) {
+          await fetchUserProfile(session.access_token)
+        } else {
+          setUser(null)
+          setIsLoading(false)
+        }
+      }
+    )
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const refreshUser = async () => {
+  const fetchUserProfile = async (accessToken: string) => {
     try {
-      const token = localStorage.getItem('access_token')
-      if (!token) {
-        setIsLoading(false)
-        return
-      }
-
       const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       })
 
       if (response.ok) {
         const userData = await response.json()
         setUser(userData)
       } else {
-        // Try to refresh token
-        const refreshed = await tryRefreshToken()
-        if (!refreshed) {
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
-          setUser(null)
-        }
+        setUser(null)
       }
     } catch {
       setUser(null)
@@ -71,97 +81,82 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const tryRefreshToken = async (): Promise<boolean> => {
-    const refreshToken = localStorage.getItem('refresh_token')
-    if (!refreshToken) return false
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        localStorage.setItem('access_token', data.access_token)
-        localStorage.setItem('refresh_token', data.refresh_token)
-
-        // Retry getting user
-        const userResponse = await fetch(`${API_BASE_URL}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${data.access_token}` },
-        })
-        if (userResponse.ok) {
-          const userData = await userResponse.json()
-          setUser(userData)
-          return true
-        }
-      }
-    } catch {
-      // Refresh failed
+  const refreshUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      await fetchUserProfile(session.access_token)
     }
-
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    return false
   }
 
   const login = async (email: string, password: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ username: email, password }),
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     })
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Login failed')
+    if (error) {
+      throw new Error(error.message)
     }
-
-    const data = await response.json()
-    localStorage.setItem('access_token', data.access_token)
-    localStorage.setItem('refresh_token', data.refresh_token)
-    await refreshUser()
   }
 
   const register = async (email: string, password: string, username: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, username }),
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: username,
+        },
+      },
     })
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Registration failed')
+    if (error) {
+      throw new Error(error.message)
     }
-
-    // Auto-login after registration
-    await login(email, password)
   }
 
-  const logout = () => {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
+  const logout = async () => {
+    await supabase.auth.signOut()
     setUser(null)
+    setSession(null)
   }
 
-  const loginWithGoogle = () => {
-    window.location.href = `${API_BASE_URL}/api/auth/google`
+  const loginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+
+    if (error) {
+      throw new Error(error.message)
+    }
   }
 
-  const loginWithGitHub = () => {
-    window.location.href = `${API_BASE_URL}/api/auth/github`
+  const loginWithGitHub = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+
+    if (error) {
+      throw new Error(error.message)
+    }
   }
 
-  const getAccessToken = () => {
-    return localStorage.getItem('access_token')
+  const getAccessToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    return session?.access_token ?? null
   }
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        session,
         isLoading,
         isAuthenticated: !!user,
         login,

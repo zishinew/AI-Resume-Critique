@@ -1,26 +1,33 @@
 import { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 
 export default function OAuthCallback() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const { refreshUser } = useAuth()
 
   useEffect(() => {
-    const accessToken = searchParams.get('access_token')
-    const refreshToken = searchParams.get('refresh_token')
+    // Supabase automatically handles the OAuth callback and sets the session
+    // We just need to wait for it and redirect
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
 
-    if (accessToken && refreshToken) {
-      localStorage.setItem('access_token', accessToken)
-      localStorage.setItem('refresh_token', refreshToken)
-      refreshUser().then(() => {
+      if (session) {
         navigate('/', { replace: true })
-      })
-    } else {
-      navigate('/login', { replace: true })
+      } else {
+        // Wait a bit for Supabase to process the callback
+        setTimeout(async () => {
+          const { data: { session: retrySession } } = await supabase.auth.getSession()
+          if (retrySession) {
+            navigate('/', { replace: true })
+          } else {
+            navigate('/login', { replace: true })
+          }
+        }, 1000)
+      }
     }
-  }, [searchParams, navigate, refreshUser])
+
+    checkSession()
+  }, [navigate])
 
   return (
     <div
