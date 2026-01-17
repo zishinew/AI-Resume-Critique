@@ -18,6 +18,7 @@ from datetime import date, datetime
 from google import genai
 from dotenv import load_dotenv
 from typing import Optional, Any
+from app.config import FRONTEND_URL
 
 load_dotenv()
 
@@ -51,10 +52,20 @@ app.include_router(friends_router)
 async def startup_event():
     init_db()
 
+def _strip_trailing_slash(value: str) -> str:
+    return value[:-1] if value.endswith("/") else value
+
+
+allowed_origins = [
+    _strip_trailing_slash(FRONTEND_URL),
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for now - restrict later
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
