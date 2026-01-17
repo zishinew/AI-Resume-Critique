@@ -72,10 +72,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userData = await response.json()
         setUser(userData)
       } else {
-        setUser(null)
+        // Backend not available or returned error - fall back to Supabase user data
+        const { data: { user: supabaseUser } } = await supabase.auth.getUser()
+        if (supabaseUser) {
+          setUser({
+            id: supabaseUser.id,
+            email: supabaseUser.email || '',
+            username: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
+            profile_picture: supabaseUser.user_metadata?.avatar_url || null,
+            auth_provider: supabaseUser.app_metadata?.provider || 'email',
+            is_verified: !!supabaseUser.email_confirmed_at,
+            created_at: supabaseUser.created_at,
+          })
+        } else {
+          setUser(null)
+        }
       }
     } catch {
-      setUser(null)
+      // Network error - fall back to Supabase user data
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser()
+      if (supabaseUser) {
+        setUser({
+          id: supabaseUser.id,
+          email: supabaseUser.email || '',
+          username: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
+          profile_picture: supabaseUser.user_metadata?.avatar_url || null,
+          auth_provider: supabaseUser.app_metadata?.provider || 'email',
+          is_verified: !!supabaseUser.email_confirmed_at,
+          created_at: supabaseUser.created_at,
+        })
+      } else {
+        setUser(null)
+      }
     } finally {
       setIsLoading(false)
     }
