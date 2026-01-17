@@ -62,48 +62,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
+  const getUserFromSupabase = async (): Promise<User | null> => {
+    const { data: { user: supabaseUser } } = await supabase.auth.getUser()
+    if (supabaseUser) {
+      return {
+        id: supabaseUser.id,
+        email: supabaseUser.email || '',
+        username: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
+        profile_picture: supabaseUser.user_metadata?.avatar_url || null,
+        auth_provider: supabaseUser.app_metadata?.provider || 'email',
+        is_verified: !!supabaseUser.email_confirmed_at,
+        created_at: supabaseUser.created_at,
+      }
+    }
+    return null
+  }
+
   const fetchUserProfile = async (accessToken: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
+      // First, set user from Supabase immediately so UI updates
+      const supabaseUserData = await getUserFromSupabase()
+      if (supabaseUserData) {
+        setUser(supabaseUserData)
+      }
 
-      if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
-      } else {
-        // Backend not available or returned error - fall back to Supabase user data
-        const { data: { user: supabaseUser } } = await supabase.auth.getUser()
-        if (supabaseUser) {
-          setUser({
-            id: supabaseUser.id,
-            email: supabaseUser.email || '',
-            username: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
-            profile_picture: supabaseUser.user_metadata?.avatar_url || null,
-            auth_provider: supabaseUser.app_metadata?.provider || 'email',
-            is_verified: !!supabaseUser.email_confirmed_at,
-            created_at: supabaseUser.created_at,
-          })
-        } else {
-          setUser(null)
+      // Then try to get enhanced profile from backend (non-blocking)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          signal: controller.signal,
+        })
+        clearTimeout(timeoutId)
+
+        if (response.ok) {
+          const userData = await response.json()
+          setUser(userData)
         }
+      } catch {
+        // Backend not available - that's fine, we already have Supabase data
       }
     } catch {
-      // Network error - fall back to Supabase user data
-      const { data: { user: supabaseUser } } = await supabase.auth.getUser()
-      if (supabaseUser) {
-        setUser({
-          id: supabaseUser.id,
-          email: supabaseUser.email || '',
-          username: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
-          profile_picture: supabaseUser.user_metadata?.avatar_url || null,
-          auth_provider: supabaseUser.app_metadata?.provider || 'email',
-          is_verified: !!supabaseUser.email_confirmed_at,
-          created_at: supabaseUser.created_at,
-        })
-      } else {
-        setUser(null)
-      }
+      // Supabase error - set user to null
+      setUser(null)
     } finally {
       setIsLoading(false)
     }
