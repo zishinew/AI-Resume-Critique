@@ -3,14 +3,13 @@ from pydantic import BaseModel
 from typing import Optional
 from app.dependencies import get_current_user, SupabaseUser
 from app.supabase_client import get_supabase_admin
-from app.config import BACKEND_URL
-import os
+from app.config import SUPABASE_URL
 import uuid
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
-UPLOADS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads"))
-os.makedirs(UPLOADS_DIR, exist_ok=True)
+# Supabase Storage bucket name for profile pictures
+PROFILE_PICTURES_BUCKET = "profile-pictures"
 
 
 class ProfileUpdateRequest(BaseModel):
@@ -162,24 +161,50 @@ async def upload_profile_picture(
     file: UploadFile = File(...),
     current_user: SupabaseUser = Depends(get_current_user),
 ):
-    """Upload and update the user's profile picture."""
+    """Upload and update the user's profile picture using Supabase Storage."""
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only image uploads are allowed",
         )
 
-    extension = os.path.splitext(file.filename or "")[1].lower() or ".png"
-    filename = f"user_{current_user.id}_{uuid.uuid4().hex}{extension}"
-    file_path = os.path.join(UPLOADS_DIR, filename)
-
-    contents = await file.read()
-    with open(file_path, "wb") as output_file:
-        output_file.write(contents)
-
-    profile_picture_url = f"{BACKEND_URL}/uploads/{filename}"
-
     supabase = get_supabase_admin()
+
+    # Generate unique filename
+    extension = file.filename.rsplit(".", 1)[-1].lower() if file.filename and "." in file.filename else "png"
+    filename = f"{current_user.id}/{uuid.uuid4().hex}.{extension}"
+
+    # Read file contents
+    contents = await file.read()
+
+    # Delete old profile picture if exists
+    try:
+        # List files in user's folder and delete them
+        existing_files = supabase.storage.from_(PROFILE_PICTURES_BUCKET).list(current_user.id)
+        if existing_files:
+            paths_to_delete = [f"{current_user.id}/{f['name']}" for f in existing_files]
+            if paths_to_delete:
+                supabase.storage.from_(PROFILE_PICTURES_BUCKET).remove(paths_to_delete)
+    except Exception:
+        pass  # Ignore errors when deleting old files
+
+    # Upload to Supabase Storage
+    try:
+        supabase.storage.from_(PROFILE_PICTURES_BUCKET).upload(
+            filename,
+            contents,
+            file_options={"content-type": file.content_type, "upsert": "true"}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to upload image: {str(e)}",
+        )
+
+    # Get public URL
+    profile_picture_url = f"{SUPABASE_URL}/storage/v1/object/public/{PROFILE_PICTURES_BUCKET}/{filename}"
+
+    # Update profile with new picture URL
     supabase.table("profiles").update({
         "profile_picture": profile_picture_url
     }).eq("id", current_user.id).execute()
