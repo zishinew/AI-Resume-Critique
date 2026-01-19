@@ -56,6 +56,7 @@ function JobSimulator() {
     resume: null,
   })
   const [screeningResult, setScreeningResult] = useState<any>(null)
+  const [resumeText, setResumeText] = useState<string>('')
   const [technicalScore, setTechnicalScore] = useState<number>(0)
   const [finalResult, setFinalResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -256,6 +257,11 @@ function JobSimulator() {
 
       const data = await response.json()
       setScreeningResult(data)
+
+      // Store resume text for behavioral interview personalization
+      if (data?.resume_text) {
+        setResumeText(data.resume_text)
+      }
 
       // If backend inferred difficulty, persist it into the selected job
       if (data?.difficulty && (data.difficulty === 'easy' || data.difficulty === 'medium' || data.difficulty === 'hard')) {
@@ -1042,6 +1048,7 @@ function JobSimulator() {
         <BehavioralInterviewLive
           company={applicationData.selectedJob.company}
           role={applicationData.selectedJob.role}
+          resumeText={resumeText}
           onComplete={handleBehavioralComplete}
         />
       </div>

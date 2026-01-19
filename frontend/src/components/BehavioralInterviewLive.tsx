@@ -7,10 +7,11 @@ import LoadingScreen from './LoadingScreen'
 interface BehavioralInterviewLiveProps {
   company: string
   role: string
+  resumeText?: string
   onComplete: (score: number, meta?: { disqualified?: boolean; flags?: any; scoring_version?: string }) => void
 }
 
-function BehavioralInterviewLive({ company, role, onComplete }: BehavioralInterviewLiveProps) {
+function BehavioralInterviewLive({ company, role, resumeText, onComplete }: BehavioralInterviewLiveProps) {
   const [isConnected, setIsConnected] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [currentQuestion, setCurrentQuestion] = useState<string>('')
@@ -193,10 +194,11 @@ function BehavioralInterviewLive({ company, role, onComplete }: BehavioralInterv
 
         setIsConnected(true)
 
-        // Send initial data
+        // Send initial data including resume for personalized questions
         ws.send(JSON.stringify({
           company,
-          role
+          role,
+          resume_text: resumeText || ''
         }))
 
         setInterviewStarted(true)

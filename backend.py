@@ -1559,7 +1559,8 @@ JOB POSTING TEXT (best-effort fetch; use this to judge requirements if present):
             "difficulty": effective_difficulty,
             "difficulty_inferred": bool(inferred_difficulty),
             "role": role,
-            "level": level
+            "level": level,
+            "resume_text": text_content  # Include resume text for behavioral interview personalization
         })
 
     except HTTPException:
@@ -3830,16 +3831,18 @@ async def behavioral_interview_websocket(websocket: WebSocket):
         return
 
     try:
-        # Receive initial connection data (company, role)
+        # Receive initial connection data (company, role, resume)
         init_data = await websocket.receive_json()
         company = init_data.get("company", "a company")
         role = init_data.get("role", "a role")
+        resume_text = init_data.get("resume_text", "")
 
         import uuid
         session_id = str(uuid.uuid4())
 
         print(f"[WebSocket] Starting behavioral interview for {role} at {company}")
         print(f"[WebSocket] Session ID: {session_id}")
+        print(f"[WebSocket] Resume text received: {len(resume_text)} chars" if resume_text else "[WebSocket] No resume text received")
 
         # Initialize interview session state
         interview_state = {
@@ -3862,36 +3865,111 @@ async def behavioral_interview_websocket(websocket: WebSocket):
 
         # Pre-generate canonical questions (clean UI text) using a non-Live model.
         # This avoids relying on output_audio_transcription, which can be garbled.
-        try:
-            questions_prompt = (
-                f"Generate exactly 3 distinct behavioral interview questions for a {role} role at {company}.\n"
-                "Each question must be 1-2 concise sentences, professional, and relevant to the role.\n"
-                "Return STRICT JSON only, with this exact shape and no extra keys:\n"
-                "{\"questions\": [\"...\", \"...\", \"...\"]}"
-            )
+        async def generate_questions_with_prompt(prompt: str) -> list:
+            """Helper to generate questions from a prompt and parse the JSON response."""
             q_resp = await asyncio.to_thread(
                 call_gemini_with_retry,
                 client,
                 "gemini-2.5-flash",
-                questions_prompt,
+                prompt,
                 3,
                 2,
             )
-            parsed = json.loads((q_resp.text or "").strip())
+
+            # Get response text, handling different response structures
+            resp_text = ""
+            if hasattr(q_resp, 'text') and q_resp.text:
+                resp_text = q_resp.text.strip()
+            elif hasattr(q_resp, 'candidates') and q_resp.candidates:
+                for candidate in q_resp.candidates:
+                    if hasattr(candidate, 'content') and candidate.content:
+                        if hasattr(candidate.content, 'parts') and candidate.content.parts:
+                            for part in candidate.content.parts:
+                                if hasattr(part, 'text') and part.text:
+                                    resp_text = part.text.strip()
+                                    break
+                    if resp_text:
+                        break
+
+            if not resp_text:
+                if hasattr(q_resp, 'prompt_feedback'):
+                    print(f"[WebSocket] Prompt feedback: {q_resp.prompt_feedback}")
+                raise ValueError("Empty response from Gemini")
+
+            # Extract JSON from response (handle markdown code blocks)
+            json_text = resp_text
+            if "```json" in resp_text:
+                json_text = resp_text.split("```json")[1].split("```")[0].strip()
+            elif "```" in resp_text:
+                json_text = resp_text.split("```")[1].split("```")[0].strip()
+
+            parsed = json.loads(json_text)
             questions = parsed.get("questions") if isinstance(parsed, dict) else None
-            if not isinstance(questions, list):
-                raise ValueError("Invalid questions JSON")
-            questions = [str(q).strip() for q in questions if str(q).strip()]
-            if len(questions) != interview_state["max_questions"]:
-                raise ValueError("Expected exactly 3 questions")
-            interview_state["questions"] = questions
+            if not isinstance(questions, list) or len(questions) != 3:
+                raise ValueError(f"Invalid questions format: {json_text[:200]}")
+            return [str(q).strip() for q in questions if str(q).strip()]
+
+        try:
+            # Strategy 1: Try personalized questions if resume is available
+            if resume_text and resume_text.strip():
+                try:
+                    print(f"[WebSocket] Attempting personalized question generation...")
+                    personalized_prompt = (
+                        f"Generate exactly 3 behavioral interview questions for a {role} role at {company}.\n\n"
+                        f"The candidate's resume:\n{resume_text[:2000]}\n\n"  # Limit resume length
+                        "IMPORTANT: Generate questions in this mix:\n"
+                        "- Question 1: A general behavioral question (teamwork, conflict resolution, or communication)\n"
+                        "- Question 2: A general behavioral question about problem-solving or taking initiative\n"
+                        "- Question 3: A PERSONALIZED question based on a specific experience, project, or skill from their resume. "
+                        "Reference something concrete from their background.\n\n"
+                        "Each question must be 1-2 concise sentences, professional, and relevant to the role.\n"
+                        "Return STRICT JSON only: {\"questions\": [\"...\", \"...\", \"...\"]}"
+                    )
+                    questions = await generate_questions_with_prompt(personalized_prompt)
+                    interview_state["questions"] = questions
+                    print(f"[WebSocket] Generated personalized questions: {questions}")
+                except Exception as personalized_err:
+                    print(f"[WebSocket] Personalized generation failed: {personalized_err}")
+                    # Fall through to generic generation
+                    raise personalized_err
+            else:
+                # Strategy 2: Generic questions (no resume)
+                generic_prompt = (
+                    f"Generate exactly 3 distinct behavioral interview questions for a {role} role at {company}.\n"
+                    "Each question must be 1-2 concise sentences, professional, and relevant to the role.\n"
+                    "Return STRICT JSON only: {\"questions\": [\"...\", \"...\", \"...\"]}"
+                )
+                questions = await generate_questions_with_prompt(generic_prompt)
+                interview_state["questions"] = questions
+                print(f"[WebSocket] Generated generic questions: {questions}")
+
         except Exception as e:
-            print(f"[WebSocket] Failed to pre-generate questions, using fallback: {e}")
-            interview_state["questions"] = [
-                "Tell me about a time you faced a challenging problem at work or school. What did you do and what was the outcome?",
-                "Describe a time you had to work with a difficult teammate or resolve a conflict. How did you handle it?",
-                "Tell me about a time you took initiative or led a project. What actions did you take and what did you learn?",
-            ]
+            # Strategy 3: Try generic questions as fallback if personalized failed
+            if resume_text and resume_text.strip():
+                try:
+                    print(f"[WebSocket] Trying generic questions as fallback...")
+                    generic_prompt = (
+                        f"Generate exactly 3 distinct behavioral interview questions for a {role} role at {company}.\n"
+                        "Each question must be 1-2 concise sentences, professional, and relevant to the role.\n"
+                        "Return STRICT JSON only: {\"questions\": [\"...\", \"...\", \"...\"]}"
+                    )
+                    questions = await generate_questions_with_prompt(generic_prompt)
+                    interview_state["questions"] = questions
+                    print(f"[WebSocket] Generated generic fallback questions: {questions}")
+                except Exception as generic_err:
+                    print(f"[WebSocket] Generic generation also failed: {generic_err}, using hardcoded fallback")
+                    interview_state["questions"] = [
+                        "Tell me about a time you faced a challenging problem at work or school. What did you do and what was the outcome?",
+                        "Describe a time you had to work with a difficult teammate or resolve a conflict. How did you handle it?",
+                        "Tell me about a time you took initiative or led a project. What actions did you take and what did you learn?",
+                    ]
+            else:
+                print(f"[WebSocket] Failed to pre-generate questions, using hardcoded fallback: {e}")
+                interview_state["questions"] = [
+                    "Tell me about a time you faced a challenging problem at work or school. What did you do and what was the outcome?",
+                    "Describe a time you had to work with a difficult teammate or resolve a conflict. How did you handle it?",
+                    "Tell me about a time you took initiative or led a project. What actions did you take and what did you learn?",
+                ]
 
         # System instruction for the interview
         system_instruction = f"""You are a professional behavioral interviewer at {company} conducting an interview for a {role} position.
