@@ -912,26 +912,35 @@ def extract_text(file_content: bytes, content_type: str) -> str:
     return file_content.decode("utf-8")
 
 
-def call_gemini_with_retry(client, model, contents, max_retries=3, initial_delay=1):
+def call_gemini_with_retry(client, model, contents, max_retries=3, initial_delay=1, timeout=60):
     """
-    Call Gemini API with retry logic for 503 errors.
-    
+    Call Gemini API with retry logic for 503/429 errors and timeout.
+
     Args:
         client: Gemini client instance
         model: Model name to use
         contents: Prompt/content to send
         max_retries: Maximum number of retry attempts
         initial_delay: Initial delay in seconds before first retry
-    
+        timeout: Maximum time in seconds for the entire operation
+
     Returns:
         Response from Gemini API
-    
+
     Raises:
-        Exception: If all retries fail or non-retryable error occurs
+        Exception: If all retries fail, timeout, or non-retryable error occurs
     """
+    import signal
+
     last_exception = None
-    
+    start_time = time.time()
+
     for attempt in range(max_retries + 1):
+        # Check if we've exceeded total timeout
+        elapsed = time.time() - start_time
+        if elapsed > timeout:
+            raise Exception("Request timed out. The server is experiencing high load. Please try again in a few moments.")
+
         try:
             response = client.models.generate_content(
                 model=model,
@@ -939,41 +948,52 @@ def call_gemini_with_retry(client, model, contents, max_retries=3, initial_delay
             )
             return response
         except Exception as e:
-            error_str = str(e)
-            # Check if it's a 503 error (service unavailable/overloaded)
-            # Handle various error formats from Gemini API
-            is_503 = False
-            
-            # Check error string for 503 indicators
-            if "503" in error_str or "UNAVAILABLE" in error_str.upper() or "overloaded" in error_str.lower():
-                is_503 = True
-            
-            # Check if exception has error attribute with code 503
-            if hasattr(e, 'error'):
-                if isinstance(e.error, dict) and e.error.get('code') == 503:
-                    is_503 = True
-                elif isinstance(e.error, str) and ("503" in e.error or "UNAVAILABLE" in e.error.upper()):
-                    is_503 = True
-            
-            # Check exception attributes directly
-            if hasattr(e, 'status_code') and e.status_code == 503:
-                is_503 = True
-            if hasattr(e, 'code') and e.code == 503:
-                is_503 = True
-            
-            if is_503 and attempt < max_retries:
-                # Calculate exponential backoff delay
-                delay = initial_delay * (2 ** attempt)
+            error_str = str(e).lower()
+
+            # Check if it's a retryable error (503, 429, overloaded, quota)
+            is_retryable = False
+            is_rate_limit = False
+
+            # Rate limit / quota errors (429)
+            if "429" in str(e) or "resource exhausted" in error_str or "quota" in error_str or "rate limit" in error_str:
+                is_retryable = True
+                is_rate_limit = True
+
+            # Service unavailable (503)
+            if "503" in str(e) or "unavailable" in error_str or "overloaded" in error_str:
+                is_retryable = True
+
+            # Check exception attributes
+            status_code = getattr(e, 'status_code', None) or getattr(e, 'code', None)
+            if status_code in [429, 503]:
+                is_retryable = True
+                is_rate_limit = status_code == 429
+
+            if is_retryable and attempt < max_retries:
+                # Use longer delays for rate limits
+                base_delay = initial_delay * 2 if is_rate_limit else initial_delay
+                delay = min(base_delay * (2 ** attempt), 10)  # Cap at 10 seconds
+
+                # Don't wait if we'd exceed timeout
+                if time.time() - start_time + delay > timeout:
+                    raise Exception("Request timed out. The server is experiencing high load. Please try again in a few moments.")
+
+                print(f"[Gemini] Retrying in {delay}s (attempt {attempt + 1}/{max_retries}) - {str(e)[:100]}")
                 time.sleep(delay)
                 last_exception = e
                 continue
             else:
                 # Non-retryable error or max retries reached
+                if is_rate_limit:
+                    raise Exception("Server is currently busy due to high demand. Please try again in a few moments.")
                 raise e
-    
-    # If we exhausted all retries, raise the last exception
+
+    # If we exhausted all retries, raise appropriate error
     if last_exception:
-        raise Exception(f"Service unavailable after {max_retries + 1} attempts. Please try again later. Original error: {str(last_exception)}")
+        error_str = str(last_exception).lower()
+        if "429" in str(last_exception) or "quota" in error_str or "rate limit" in error_str:
+            raise Exception("Server is currently busy due to high demand. Please try again in a few moments.")
+        raise Exception("Service temporarily unavailable. Please try again in a few moments.")
 
 
 @app.get("/")
@@ -1240,6 +1260,18 @@ async def analyze_resume(
     except HTTPException:
         raise
     except Exception as e:
+        error_msg = str(e).lower()
+        # Return user-friendly messages for common errors
+        if "busy" in error_msg or "rate limit" in error_msg or "quota" in error_msg or "429" in str(e):
+            raise HTTPException(
+                status_code=503,
+                detail="Server is currently busy due to high demand. Please try again in a few moments."
+            )
+        if "timed out" in error_msg or "timeout" in error_msg:
+            raise HTTPException(
+                status_code=504,
+                detail="Request timed out. Please try again."
+            )
         raise HTTPException(
             status_code=500,
             detail=f"An error occurred: {str(e)}"
@@ -1566,6 +1598,18 @@ JOB POSTING TEXT (best-effort fetch; use this to judge requirements if present):
     except HTTPException:
         raise
     except Exception as e:
+        error_msg = str(e).lower()
+        # Return user-friendly messages for common errors
+        if "busy" in error_msg or "rate limit" in error_msg or "quota" in error_msg or "429" in str(e):
+            raise HTTPException(
+                status_code=503,
+                detail="Server is currently busy due to high demand. Please try again in a few moments."
+            )
+        if "timed out" in error_msg or "timeout" in error_msg:
+            raise HTTPException(
+                status_code=504,
+                detail="Request timed out. Please try again."
+            )
         raise HTTPException(
             status_code=500,
             detail=f"An error occurred: {str(e)}"
@@ -2757,7 +2801,7 @@ Be strict - only mark as optimal if it uses the best known approach."""
 
         response = call_gemini_with_retry(
             client=client,
-            model="gemini-2.0-flash-exp",
+            model="gemini-2.5-flash",
             contents=prompt,
             max_retries=2,
             initial_delay=1
@@ -3173,7 +3217,7 @@ async def start_voice_interview(request: VoiceInterviewRequest):
         client = genai.Client(api_key=GEMINI_API_KEY)
         response = call_gemini_with_retry(
             client=client,
-            model="gemini-3-flash-preview",
+            model="gemini-2.5-flash",
             contents=prompt,
             max_retries=3,
             initial_delay=2
@@ -3288,12 +3332,12 @@ async def handle_voice_response(
             
             response = call_gemini_with_retry(
                 client=client,
-                model="gemini-2.0-flash-exp",  # Supports audio
+                model="gemini-2.5-flash",  # Supports audio input
                 contents=prompt_parts,
                 max_retries=2,
                 initial_delay=1
             )
-            
+
             transcript = response.text.strip()
             print(f"[Gemini] Transcribed: {transcript[:100]}...")
             
@@ -3323,7 +3367,7 @@ Respond with ONLY a number from 0-100 based on how well the response meets these
         client = genai.Client(api_key=GEMINI_API_KEY)
         eval_response = call_gemini_with_retry(
             client=client,
-            model="gemini-3-flash-preview",
+            model="gemini-2.5-flash",
             contents=evaluation_prompt,
             max_retries=3,
             initial_delay=2
@@ -3388,7 +3432,7 @@ Return ONLY the question, nothing else."""
         client = genai.Client(api_key=GEMINI_API_KEY)
         response = call_gemini_with_retry(
             client=client,
-            model="gemini-3-flash-preview",
+            model="gemini-2.5-flash",
             contents=prompt,
             max_retries=3,
             initial_delay=2

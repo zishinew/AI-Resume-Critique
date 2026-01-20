@@ -256,6 +256,12 @@ function JobSimulator() {
       })
 
       const data = await response.json()
+
+      // Handle error responses
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to screen resume')
+      }
+
       setScreeningResult(data)
 
       // Store resume text for behavioral interview personalization
@@ -286,9 +292,10 @@ function JobSimulator() {
           setShowSuccessOverlay(false)
         }, 2500)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error)
-      alert('An error occurred during resume screening')
+      const message = error?.message || 'An error occurred during resume screening'
+      alert(message)
     } finally {
       setLoading(false)
       setLoadingText('')
